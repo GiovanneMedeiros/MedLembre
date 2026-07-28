@@ -1,4 +1,4 @@
-import { AlarmClock, Check, Clock, TriangleAlert } from "lucide-react";
+import { AlarmClock, Check, Clock, TriangleAlert, X } from "lucide-react";
 import type { DoseStatus } from "../../types/dashboard";
 import { cn } from "../../lib/cn";
 
@@ -7,6 +7,7 @@ const CONFIG: Record<DoseStatus, { label: string; className: string; icon: typeo
   proximo: { label: "Próximo", className: "bg-sky-50 text-sky-700", icon: AlarmClock },
   pendente: { label: "Pendente", className: "bg-amber-50 text-amber-700", icon: Clock },
   atrasado: { label: "Atrasado", className: "bg-red-50 text-red-700", icon: TriangleAlert },
+  perdido: { label: "Perdido", className: "bg-ink-900/[0.06] text-ink-500", icon: X },
 };
 
 export function DoseStatusBadge({ status }: { status: DoseStatus }) {
