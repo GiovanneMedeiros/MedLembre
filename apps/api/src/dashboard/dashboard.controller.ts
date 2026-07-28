@@ -10,7 +10,11 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('summary')
-  getSummary(@CurrentUser() user: AuthenticatedUser, @Query('date') date?: string) {
-    return this.dashboardService.getSummary(user.id, date);
+  getSummary(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('date') date?: string,
+    @Query('familyMemberId') familyMemberId?: string,
+  ) {
+    return this.dashboardService.getSummary(user.id, date, familyMemberId ?? null);
   }
 }

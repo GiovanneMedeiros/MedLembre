@@ -14,9 +14,21 @@ export class MedicationsService {
     }
   }
 
-  async findAll(userId: string) {
+  private async assertFamilyMemberOwnership(userId: string, familyMemberId?: string) {
+    if (!familyMemberId) return;
+
+    const member = await this.prisma.familyMember.findFirst({
+      where: { id: familyMemberId, userId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Familiar não encontrado');
+    }
+  }
+
+  async findAll(userId: string, familyMemberId: string | null) {
     return this.prisma.medication.findMany({
-      where: { userId },
+      where: { userId, familyMemberId },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -35,10 +47,12 @@ export class MedicationsService {
 
   async create(userId: string, dto: CreateMedicationDto) {
     this.assertValidDateRange(dto.dataInicio, dto.dataFim);
+    await this.assertFamilyMemberOwnership(userId, dto.familyMemberId);
 
     return this.prisma.medication.create({
       data: {
         userId,
+        familyMemberId: dto.familyMemberId,
         nome: dto.nome,
         dosagem: dto.dosagem,
         observacao: dto.observacao,

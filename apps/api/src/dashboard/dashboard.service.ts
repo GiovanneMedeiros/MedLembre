@@ -1,39 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  combineDateAndTime,
+  isWithinRange,
+  toDateOnlyString,
+} from '../common/medication-schedule.util';
 import type { DashboardSummary, DoseStatus, TimelineItem } from './dashboard.types';
 
 const LATE_GRACE_MINUTES = 30;
 const LOOKAHEAD_DAYS = 7;
 
-function toDateOnlyString(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function combineDateAndTime(dateOnly: string, horario: string): Date {
-  return new Date(`${dateOnly}T${horario}:00`);
-}
-
-function isWithinRange(dateOnly: string, dataInicio: Date, dataFim: Date | null): boolean {
-  const target = combineDateAndTime(dateOnly, '00:00');
-  if (target < new Date(toDateOnlyString(dataInicio) + 'T00:00:00')) return false;
-  if (dataFim && target > new Date(toDateOnlyString(dataFim) + 'T23:59:59')) return false;
-  return true;
-}
-
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getSummary(userId: string, dateOnly?: string): Promise<DashboardSummary> {
+  async getSummary(
+    userId: string,
+    dateOnly?: string,
+    familyMemberId?: string | null,
+  ): Promise<DashboardSummary> {
     const today = dateOnly ?? toDateOnlyString(new Date());
     const now = new Date();
+    const scopeWhere = { userId, familyMemberId: familyMemberId ?? null };
 
     const [medications, totalCount] = await Promise.all([
-      this.prisma.medication.findMany({ where: { userId, status: 'ATIVO' } }),
-      this.prisma.medication.count({ where: { userId } }),
+      this.prisma.medication.findMany({ where: { ...scopeWhere, status: 'ATIVO' } }),
+      this.prisma.medication.count({ where: scopeWhere }),
     ]);
 
     const dayOfWeek = combineDateAndTime(today, '00:00').getDay();
@@ -45,6 +37,7 @@ export class DashboardService {
     const doseRecordsToday = await this.prisma.doseRecord.findMany({
       where: {
         userId,
+        medicationId: { in: medications.map((m) => m.id) },
         scheduledFor: {
           gte: combineDateAndTime(today, '00:00'),
           lt: combineDateAndTime(today, '23:59'),
@@ -90,7 +83,7 @@ export class DashboardService {
     let proximoMedicamento = timelineHoje.find((item) => item.status === 'proximo') ?? null;
 
     if (!proximoMedicamento) {
-      proximoMedicamento = await this.findNextUpcoming(userId, today);
+      proximoMedicamento = await this.findNextUpcoming(userId, today, familyMemberId ?? null);
     }
 
     const medicamentosTomadosHoje = timelineHoje.filter((item) => item.status === 'tomado').length;
@@ -107,11 +100,17 @@ export class DashboardService {
     };
   }
 
-  private async findNextUpcoming(userId: string, fromDateOnly: string): Promise<TimelineItem | null> {
-    const medications = await this.prisma.medication.findMany({ where: { userId, status: 'ATIVO' } });
+  private async findNextUpcoming(
+    userId: string,
+    fromDateOnly: string,
+    familyMemberId: string | null,
+  ): Promise<TimelineItem | null> {
+    const medications = await this.prisma.medication.findMany({
+      where: { userId, familyMemberId, status: 'ATIVO' },
+    });
     if (medications.length === 0) return null;
 
-    let cursor = combineDateAndTime(fromDateOnly, '00:00');
+    const cursor = combineDateAndTime(fromDateOnly, '00:00');
 
     for (let i = 1; i <= LOOKAHEAD_DAYS; i += 1) {
       const nextDate = new Date(cursor);

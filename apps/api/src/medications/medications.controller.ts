@@ -26,8 +26,11 @@ export class MedicationsController {
   constructor(private readonly medicationsService: MedicationsService) {}
 
   @Get()
-  findAll(@CurrentUser() user: AuthenticatedUser) {
-    return this.medicationsService.findAll(user.id);
+  findAll(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('familyMemberId') familyMemberId?: string,
+  ) {
+    return this.medicationsService.findAll(user.id, familyMemberId ?? null);
   }
 
   @Get(':id')

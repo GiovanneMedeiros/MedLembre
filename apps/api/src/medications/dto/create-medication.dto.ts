@@ -6,6 +6,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   Max,
@@ -16,6 +17,10 @@ import {
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 export class CreateMedicationDto {
+  @IsOptional()
+  @IsUUID(undefined, { message: 'Familiar inválido' })
+  familyMemberId?: string;
+
   @IsString()
   @MinLength(2, { message: 'O nome deve ter no mínimo 2 caracteres' })
   @MaxLength(100, { message: 'O nome deve ter no máximo 100 caracteres' })
