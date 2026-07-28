@@ -1,0 +1,25 @@
+{
+  "name": "MedLembre — Lembretes de medicamentos",
+  "short_name": "MedLembre",
+  "description": "Receba lembretes dos seus medicamentos e cuide da sua rotina com mais tranquilidade.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#D8453B",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
