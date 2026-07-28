@@ -3,6 +3,7 @@ export type MedicationStatus = "ATIVO" | "PAUSADO";
 export interface Medication {
   id: string;
   userId: string;
+  familyMemberId: string | null;
   nome: string;
   dosagem: string;
   observacao: string | null;
@@ -16,6 +17,7 @@ export interface Medication {
 }
 
 export interface MedicationInput {
+  familyMemberId?: string;
   nome: string;
   dosagem: string;
   observacao?: string;

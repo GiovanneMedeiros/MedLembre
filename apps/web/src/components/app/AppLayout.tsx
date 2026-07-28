@@ -4,6 +4,8 @@ import { LogOut, Menu, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { SidebarNav } from "./SidebarNav";
 import { InstallAppBanner } from "./InstallAppBanner";
+import { FamilyScopeSwitcher } from "./FamilyScopeSwitcher";
+import { FamilyScopeProvider } from "../../contexts/FamilyScopeContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { NAV_ITEMS } from "./navItems";
 
@@ -28,12 +30,14 @@ export function AppLayout() {
   }
 
   return (
+    <FamilyScopeProvider>
     <div className="min-h-svh bg-cream lg:flex">
       {/* Sidebar desktop */}
       <aside className="hidden w-64 shrink-0 border-r border-ink-900/[0.06] bg-white lg:flex lg:flex-col">
         <div className="px-5 py-6">
           <Logo />
         </div>
+        <FamilyScopeSwitcher />
         <div className="flex-1 overflow-y-auto px-3">
           <SidebarNav />
         </div>
@@ -93,6 +97,7 @@ export function AppLayout() {
                 <X className="h-5 w-5" />
               </button>
             </div>
+            <FamilyScopeSwitcher />
             <div className="flex-1 overflow-y-auto px-3">
               <SidebarNav onNavigate={() => setIsMobileNavOpen(false)} />
             </div>
@@ -121,5 +126,6 @@ export function AppLayout() {
         <Outlet />
       </main>
     </div>
+    </FamilyScopeProvider>
   );
 }

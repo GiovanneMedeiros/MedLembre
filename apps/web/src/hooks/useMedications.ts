@@ -1,14 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { useFamilyScope } from "../contexts/FamilyScopeContext";
 import type { Medication, MedicationInput, MedicationStatus } from "../types/medication";
 
 const MEDICATIONS_KEY = ["medications"];
 const DASHBOARD_KEY = ["dashboard-summary"];
+const HISTORICO_KEY = ["historico"];
 
 export function useMedications() {
+  const { familyMemberId } = useFamilyScope();
+
   return useQuery({
-    queryKey: MEDICATIONS_KEY,
-    queryFn: () => api.get<Medication[]>("/medications"),
+    queryKey: [...MEDICATIONS_KEY, familyMemberId],
+    queryFn: () => {
+      const params = familyMemberId ? `?familyMemberId=${familyMemberId}` : "";
+      return api.get<Medication[]>(`/medications${params}`);
+    },
   });
 }
 
@@ -17,13 +24,16 @@ function useInvalidateMedications() {
   return () => {
     queryClient.invalidateQueries({ queryKey: MEDICATIONS_KEY });
     queryClient.invalidateQueries({ queryKey: DASHBOARD_KEY });
+    queryClient.invalidateQueries({ queryKey: HISTORICO_KEY });
   };
 }
 
 export function useCreateMedication() {
   const invalidate = useInvalidateMedications();
+  const { familyMemberId } = useFamilyScope();
   return useMutation({
-    mutationFn: (input: MedicationInput) => api.post<Medication>("/medications", input),
+    mutationFn: (input: MedicationInput) =>
+      api.post<Medication>("/medications", { ...input, familyMemberId: familyMemberId ?? undefined }),
     onSuccess: invalidate,
   });
 }
