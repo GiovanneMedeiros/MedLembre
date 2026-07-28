@@ -57,10 +57,10 @@ export function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Button as="a" href="#" variant="ghost" size="md">
+            <Button as="link" to="/login" variant="ghost" size="md">
               Entrar
             </Button>
-            <Button as="a" href="#planos" variant="primary" size="md">
+            <Button as="link" to="/cadastro" variant="primary" size="md">
               Começar agora
             </Button>
           </div>
@@ -97,10 +97,10 @@ export function Header() {
                 </a>
               ))}
               <div className="mt-2 flex flex-col gap-2 border-t border-ink-900/[0.06] pt-4">
-                <Button as="a" href="#" variant="secondary" size="md" onClick={() => setIsMenuOpen(false)}>
+                <Button as="link" to="/login" variant="secondary" size="md" onClick={() => setIsMenuOpen(false)}>
                   Entrar
                 </Button>
-                <Button as="a" href="#planos" variant="primary" size="md" onClick={() => setIsMenuOpen(false)}>
+                <Button as="link" to="/cadastro" variant="primary" size="md" onClick={() => setIsMenuOpen(false)}>
                   Começar agora
                 </Button>
               </div>

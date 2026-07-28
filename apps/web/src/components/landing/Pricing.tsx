@@ -96,8 +96,8 @@ export function Pricing() {
                 </ul>
 
                 <Button
-                  as="a"
-                  href="#"
+                  as="link"
+                  to="/cadastro"
                   variant={plan.highlighted ? "primary" : "secondary"}
                   size="md"
                   className="mt-7 w-full"

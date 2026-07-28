@@ -32,7 +32,7 @@ export function Hero() {
             </p>
 
             <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
-              <Button as="a" href="#planos" size="lg">
+              <Button as="link" to="/cadastro" size="lg">
                 Começar agora
                 <ArrowRight className="h-4 w-4" />
               </Button>
