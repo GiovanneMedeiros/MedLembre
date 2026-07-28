@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { SidebarNav } from "./SidebarNav";
+import { InstallAppBanner } from "./InstallAppBanner";
 import { useAuth } from "../../contexts/AuthContext";
 import { NAV_ITEMS } from "./navItems";
 
@@ -116,6 +117,7 @@ export function AppLayout() {
       )}
 
       <main className="min-w-0 flex-1">
+        <InstallAppBanner />
         <Outlet />
       </main>
     </div>
