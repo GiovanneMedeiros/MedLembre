@@ -1,9 +1,87 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  /* Vermelho MedLembre — paleta refinada, mais "garnet" que neon, para transmitir confiança */
+  --color-brand-50: #fcf2f1;
+  --color-brand-100: #fbe3e1;
+  --color-brand-200: #f7c8c4;
+  --color-brand-300: #f0a29b;
+  --color-brand-400: #e4726a;
+  --color-brand-500: #d8453b;
+  --color-brand-600: #c22e24;
+  --color-brand-700: #a1231b;
+  --color-brand-800: #7e1d18;
+  --color-brand-900: #5e1815;
+  --color-brand-950: #360c0a;
+
+  --color-ink-900: #1c1412;
+  --color-ink-700: #3d2f2c;
+  --color-ink-500: #6b5a56;
+  --color-ink-300: #a8938e;
+
+  --color-cream: #fffaf9;
+
+  --shadow-soft: 0 2px 8px -2px rgba(94, 24, 21, 0.08), 0 8px 24px -8px rgba(94, 24, 21, 0.1);
+  --shadow-lift: 0 8px 16px -4px rgba(94, 24, 21, 0.12), 0 24px 48px -16px rgba(94, 24, 21, 0.18);
+  --shadow-glow: 0 0 0 1px rgba(216, 69, 59, 0.06), 0 20px 60px -20px rgba(194, 46, 36, 0.35);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
-body {
-  margin: 0;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-cream);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
