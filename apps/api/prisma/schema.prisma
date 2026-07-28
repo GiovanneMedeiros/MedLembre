@@ -20,6 +20,7 @@ enum Plano {
 
 enum ReminderChannel {
   WHATSAPP
+  SMS
 }
 
 enum ReminderStatus {

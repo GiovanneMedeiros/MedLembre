@@ -1,15 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import type { FamilyMember, Medication } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { SupabaseAdminService } from '../supabase-admin/supabase-admin.service';
-import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import {
   combineDateAndTime,
   currentTimeString,
   isWithinRange,
   toDateOnlyString,
 } from '../common/medication-schedule.util';
+import { toWhatsAppNumber } from '../common/phone.util';
+import { PrismaService } from '../prisma/prisma.service';
+import { SmsService } from '../sms/sms.service';
+import { SupabaseAdminService } from '../supabase-admin/supabase-admin.service';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
 type MedicationWithFamily = Medication & { familyMember: FamilyMember | null };
 
@@ -21,6 +23,7 @@ export class RemindersScheduler {
     private readonly prisma: PrismaService,
     private readonly supabaseAdmin: SupabaseAdminService,
     private readonly whatsapp: WhatsAppService,
+    private readonly sms: SmsService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -80,25 +83,34 @@ export class RemindersScheduler {
   }
 
   private async dispatchReminder(medication: MedicationWithFamily, scheduledFor: Date, horario: string) {
-    const to =
+    const phoneDigits =
       medication.familyMember?.whatsapp ??
       (await this.supabaseAdmin.getOwnerContact(medication.userId)).whatsapp;
 
-    if (!to) {
+    if (!phoneDigits) {
       this.logger.warn(
-        `Sem número de WhatsApp para lembrete de "${medication.nome}" (medicamento ${medication.id}).`,
+        `Sem número de contato para lembrete de "${medication.nome}" (medicamento ${medication.id}).`,
       );
       return;
     }
 
-    await this.whatsapp.sendMedicationReminder({
+    const baseInput = {
       userId: medication.userId,
       familyMemberId: medication.familyMemberId,
       medicationId: medication.id,
       medicationNome: medication.nome,
       horario,
       scheduledFor,
-      to,
-    });
+    };
+
+    // Preferimos o WhatsApp oficial quando configurado; caso contrário, caímos
+    // para SMS (Twilio) se disponível. Sem nenhum dos dois, o envio pelo
+    // WhatsApp entra em modo simulado (apenas registra no ReminderLog).
+    if (this.whatsapp.isConfigured() || !this.sms.isConfigured()) {
+      await this.whatsapp.sendMedicationReminder({ ...baseInput, to: toWhatsAppNumber(phoneDigits) });
+      return;
+    }
+
+    await this.sms.sendMedicationReminder({ ...baseInput, to: phoneDigits });
   }
 }

@@ -28,6 +28,10 @@ export class WhatsAppService {
     private readonly prisma: PrismaService,
   ) {}
 
+  isConfigured(): boolean {
+    return this.provider.isConfigured();
+  }
+
   async sendMedicationReminder(input: SendMedicationReminderInput) {
     const message = buildReminderMessage(input.medicationNome, input.horario);
     const buttons = buildReminderButtons(input.medicationId, input.scheduledFor.toISOString());
