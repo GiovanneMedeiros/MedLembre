@@ -20,7 +20,7 @@ export function CtaBand() {
             minutos.
           </p>
           <div className="mt-8 flex justify-center">
-            <Button as="a" href="#planos" variant="secondary" size="lg" className="border-0 bg-white text-brand-700">
+            <Button as="link" to="/cadastro" variant="secondary" size="lg" className="border-0 bg-white text-brand-700">
               Começar agora
               <ArrowRight className="h-4 w-4" />
             </Button>

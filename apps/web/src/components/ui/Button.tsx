@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
+import { Link, type LinkProps } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
 type Variant = "primary" | "secondary" | "ghost";
@@ -33,7 +34,11 @@ type ButtonProps = CommonProps &
 type AnchorProps = CommonProps &
   AnchorHTMLAttributes<HTMLAnchorElement> & { as: "a"; href: string };
 
-export function Button({ variant = "primary", size = "md", className, children, as, ...props }: ButtonProps | AnchorProps) {
+type RouterLinkProps = CommonProps & Omit<LinkProps, keyof CommonProps> & { as: "link" };
+
+type Props = ButtonProps | AnchorProps | RouterLinkProps;
+
+export function Button({ variant = "primary", size = "md", className, children, as, ...props }: Props) {
   const classes = cn(base, variants[variant], sizes[size], className);
 
   if (as === "a") {
@@ -42,6 +47,15 @@ export function Button({ variant = "primary", size = "md", className, children, 
       <a href={href} className={classes} {...rest}>
         {children}
       </a>
+    );
+  }
+
+  if (as === "link") {
+    const { to, ...rest } = props as RouterLinkProps;
+    return (
+      <Link to={to} className={classes} {...rest}>
+        {children}
+      </Link>
     );
   }
 
