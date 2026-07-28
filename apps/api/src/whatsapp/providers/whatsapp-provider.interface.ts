@@ -12,5 +12,9 @@ export const WHATSAPP_PROVIDER = Symbol('WHATSAPP_PROVIDER');
 export interface WhatsAppProvider {
   isConfigured(): boolean;
   sendTextMessage(to: string, body: string): Promise<SendMessageResult>;
-  sendButtonsMessage(to: string, body: string, buttons: WhatsAppButton[]): Promise<SendMessageResult>;
+  sendButtonsMessage(
+    to: string,
+    body: string,
+    buttons: WhatsAppButton[],
+  ): Promise<SendMessageResult>;
 }

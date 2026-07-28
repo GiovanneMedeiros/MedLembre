@@ -13,9 +13,12 @@ export class TwilioSmsProvider implements SmsProvider {
   private readonly fromNumber?: string;
 
   constructor(configService: ConfigService) {
-    this.accountSid = configService.get<string>('TWILIO_ACCOUNT_SID') || undefined;
-    this.authToken = configService.get<string>('TWILIO_AUTH_TOKEN') || undefined;
-    this.fromNumber = configService.get<string>('TWILIO_FROM_NUMBER') || undefined;
+    this.accountSid =
+      configService.get<string>('TWILIO_ACCOUNT_SID') || undefined;
+    this.authToken =
+      configService.get<string>('TWILIO_AUTH_TOKEN') || undefined;
+    this.fromNumber =
+      configService.get<string>('TWILIO_FROM_NUMBER') || undefined;
   }
 
   isConfigured(): boolean {
@@ -33,33 +36,44 @@ export class TwilioSmsProvider implements SmsProvider {
     const toNumber = toE164BR(to);
 
     try {
-      const response = await fetch(`${TWILIO_API_BASE}/Accounts/${this.accountSid}/Messages.json`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${this.accountSid}:${this.authToken}`).toString('base64')}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+      const response = await fetch(
+        `${TWILIO_API_BASE}/Accounts/${this.accountSid}/Messages.json`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${Buffer.from(`${this.accountSid}:${this.authToken}`).toString('base64')}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            From: this.fromNumber as string,
+            To: toNumber,
+            Body: body,
+          }).toString(),
         },
-        body: new URLSearchParams({
-          From: this.fromNumber as string,
-          To: toNumber,
-          Body: body,
-        }).toString(),
-      });
+      );
 
-      const data = (await response.json().catch(() => null)) as
-        | { sid?: string; message?: string; error_message?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        sid?: string;
+        message?: string;
+        error_message?: string;
+      } | null;
 
       if (!response.ok) {
-        const errorMessage = data?.message ?? data?.error_message ?? `HTTP ${response.status}`;
-        this.logger.error(`Falha ao enviar SMS para ${toNumber}: ${errorMessage}`);
+        const errorMessage =
+          data?.message ?? data?.error_message ?? `HTTP ${response.status}`;
+        this.logger.error(
+          `Falha ao enviar SMS para ${toNumber}: ${errorMessage}`,
+        );
         return { simulated: false, errorMessage };
       }
 
       return { simulated: false, providerMessageId: data?.sid };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      this.logger.error(`Erro de rede ao enviar SMS para ${toNumber}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(
+        `Erro de rede ao enviar SMS para ${toNumber}: ${errorMessage}`,
+      );
       return { simulated: false, errorMessage };
     }
   }

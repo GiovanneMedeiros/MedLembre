@@ -21,15 +21,22 @@ export class PushService {
     private readonly prisma: PrismaService,
   ) {
     this.publicKey = configService.get<string>('VAPID_PUBLIC_KEY') || undefined;
-    const privateKey = configService.get<string>('VAPID_PRIVATE_KEY') || undefined;
+    const privateKey =
+      configService.get<string>('VAPID_PRIVATE_KEY') || undefined;
     const subject = configService.get<string>('VAPID_SUBJECT') || undefined;
 
     this.configured = Boolean(this.publicKey && privateKey && subject);
 
     if (this.configured) {
-      webpush.setVapidDetails(subject as string, this.publicKey as string, privateKey as string);
+      webpush.setVapidDetails(
+        subject as string,
+        this.publicKey as string,
+        privateKey as string,
+      );
     } else {
-      this.logger.warn('VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY/VAPID_SUBJECT ausentes — Web Push desativado.');
+      this.logger.warn(
+        'VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY/VAPID_SUBJECT ausentes — Web Push desativado.',
+      );
     }
   }
 
@@ -59,13 +66,22 @@ export class PushService {
   }
 
   async unsubscribe(userId: string, endpoint: string) {
-    await this.prisma.pushSubscription.deleteMany({ where: { userId, endpoint } });
+    await this.prisma.pushSubscription.deleteMany({
+      where: { userId, endpoint },
+    });
   }
 
-  async sendMedicationReminder(userId: string, medicationId: string, medicationNome: string, horario: string) {
+  async sendMedicationReminder(
+    userId: string,
+    medicationId: string,
+    medicationNome: string,
+    horario: string,
+  ) {
     if (!this.configured) return;
 
-    const subscriptions = await this.prisma.pushSubscription.findMany({ where: { userId } });
+    const subscriptions = await this.prisma.pushSubscription.findMany({
+      where: { userId },
+    });
     if (subscriptions.length === 0) return;
 
     const payload: ReminderPushPayload = {
@@ -87,11 +103,16 @@ export class PushService {
         } catch (error) {
           const statusCode = (error as { statusCode?: number }).statusCode;
           if (statusCode === 404 || statusCode === 410) {
-            await this.prisma.pushSubscription.delete({ where: { id: subscription.id } }).catch(() => undefined);
+            await this.prisma.pushSubscription
+              .delete({ where: { id: subscription.id } })
+              .catch(() => undefined);
             return;
           }
-          const message = error instanceof Error ? error.message : 'Erro desconhecido';
-          this.logger.error(`Falha ao enviar push para ${subscription.endpoint}: ${message}`);
+          const message =
+            error instanceof Error ? error.message : 'Erro desconhecido';
+          this.logger.error(
+            `Falha ao enviar push para ${subscription.endpoint}: ${message}`,
+          );
         }
       }),
     );

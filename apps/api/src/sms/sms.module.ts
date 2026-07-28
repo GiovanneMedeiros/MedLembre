@@ -4,7 +4,11 @@ import { TwilioSmsProvider } from './providers/twilio-sms.provider';
 import { SmsService } from './sms.service';
 
 @Module({
-  providers: [TwilioSmsProvider, { provide: SMS_PROVIDER, useExisting: TwilioSmsProvider }, SmsService],
+  providers: [
+    TwilioSmsProvider,
+    { provide: SMS_PROVIDER, useExisting: TwilioSmsProvider },
+    SmsService,
+  ],
   exports: [SmsService],
 })
 export class SmsModule {}

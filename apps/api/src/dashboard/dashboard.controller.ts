@@ -15,6 +15,24 @@ export class DashboardController {
     @Query('date') date?: string,
     @Query('familyMemberId') familyMemberId?: string,
   ) {
-    return this.dashboardService.getSummary(user.id, date, familyMemberId ?? null);
+    return this.dashboardService.getSummary(
+      user.id,
+      date,
+      familyMemberId ?? null,
+    );
+  }
+
+  @Get('historico')
+  getHistorico(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('dias') dias?: string,
+    @Query('familyMemberId') familyMemberId?: string,
+  ) {
+    const requestedDays = dias ? Number.parseInt(dias, 10) : undefined;
+    return this.dashboardService.getHistorico(
+      user.id,
+      familyMemberId ?? null,
+      Number.isFinite(requestedDays) ? requestedDays : undefined,
+    );
   }
 }

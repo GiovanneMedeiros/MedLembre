@@ -1,11 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CreateFamilyMemberDto } from './dto/create-family-member.dto';
 import { UpdateFamilyMemberDto } from './dto/update-family-member.dto';
-
-const FAMILY_PLAN_ERROR =
-  'A gestão de familiares está disponível apenas nos planos Família e Premium.';
 
 @Injectable()
 export class FamilyMembersService {
@@ -22,7 +19,9 @@ export class FamilyMembersService {
   }
 
   async findOneOrThrow(userId: string, id: string) {
-    const member = await this.prisma.familyMember.findFirst({ where: { id, userId } });
+    const member = await this.prisma.familyMember.findFirst({
+      where: { id, userId },
+    });
     if (!member) {
       throw new NotFoundException('Familiar não encontrado');
     }
@@ -30,10 +29,7 @@ export class FamilyMembersService {
   }
 
   async create(userId: string, dto: CreateFamilyMemberDto) {
-    const hasAccess = await this.subscriptionsService.hasAccessToFamily(userId);
-    if (!hasAccess) {
-      throw new ForbiddenException(FAMILY_PLAN_ERROR);
-    }
+    await this.subscriptionsService.assertCanCreateFamilyMember(userId);
 
     return this.prisma.familyMember.create({
       data: {

@@ -18,11 +18,15 @@ export class SupabaseAdminService {
 
     this.client =
       url && secretKey
-        ? createClient(url, secretKey, { auth: { autoRefreshToken: false, persistSession: false } })
+        ? createClient(url, secretKey, {
+            auth: { autoRefreshToken: false, persistSession: false },
+          })
         : null;
 
     if (!this.client) {
-      this.logger.warn('SUPABASE_URL/SUPABASE_SECRET_KEY não configurados — recursos de admin desativados.');
+      this.logger.warn(
+        'SUPABASE_URL/SUPABASE_SECRET_KEY não configurados — recursos de admin desativados.',
+      );
     }
   }
 
@@ -31,7 +35,9 @@ export class SupabaseAdminService {
 
     const { data, error } = await this.client.auth.admin.getUserById(userId);
     if (error || !data.user) {
-      this.logger.warn(`Não foi possível carregar o usuário ${userId}: ${error?.message}`);
+      this.logger.warn(
+        `Não foi possível carregar o usuário ${userId}: ${error?.message}`,
+      );
       return { nome: null, whatsapp: null };
     }
 

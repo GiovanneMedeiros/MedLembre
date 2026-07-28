@@ -1,18 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import {
   combineDateAndTime,
   isWithinRange,
   toDateOnlyString,
 } from '../common/medication-schedule.util';
-import type { DashboardSummary, DoseStatus, TimelineItem } from './dashboard.types';
+import type {
+  DashboardSummary,
+  DoseStatus,
+  HistoricoResult,
+  TimelineItem,
+} from './dashboard.types';
 
 const LATE_GRACE_MINUTES = 30;
 const LOOKAHEAD_DAYS = 7;
+const HISTORY_HARD_CAP_DAYS = 365;
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptionsService: SubscriptionsService,
+  ) {}
 
   async getSummary(
     userId: string,
@@ -24,14 +34,18 @@ export class DashboardService {
     const scopeWhere = { userId, familyMemberId: familyMemberId ?? null };
 
     const [medications, totalCount] = await Promise.all([
-      this.prisma.medication.findMany({ where: { ...scopeWhere, status: 'ATIVO' } }),
+      this.prisma.medication.findMany({
+        where: { ...scopeWhere, status: 'ATIVO' },
+      }),
       this.prisma.medication.count({ where: scopeWhere }),
     ]);
 
     const dayOfWeek = combineDateAndTime(today, '00:00').getDay();
 
     const relevantMedications = medications.filter(
-      (m) => m.diasSemana.includes(dayOfWeek) && isWithinRange(today, m.dataInicio, m.dataFim),
+      (m) =>
+        m.diasSemana.includes(dayOfWeek) &&
+        isWithinRange(today, m.dataInicio, m.dataFim),
     );
 
     const doseRecordsToday = await this.prisma.doseRecord.findMany({
@@ -45,7 +59,9 @@ export class DashboardService {
       },
     });
 
-    const takenSet = new Set(doseRecordsToday.map((d) => d.scheduledFor.toISOString()));
+    const takenSet = new Set(
+      doseRecordsToday.map((d) => d.scheduledFor.toISOString()),
+    );
 
     const timelineHoje: TimelineItem[] = [];
 
@@ -75,18 +91,30 @@ export class DashboardService {
 
     timelineHoje.sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
 
-    const nextPendingIndex = timelineHoje.findIndex((item) => item.status === 'pendente');
+    const nextPendingIndex = timelineHoje.findIndex(
+      (item) => item.status === 'pendente',
+    );
     if (nextPendingIndex !== -1) {
-      timelineHoje[nextPendingIndex] = { ...timelineHoje[nextPendingIndex], status: 'proximo' };
+      timelineHoje[nextPendingIndex] = {
+        ...timelineHoje[nextPendingIndex],
+        status: 'proximo',
+      };
     }
 
-    let proximoMedicamento = timelineHoje.find((item) => item.status === 'proximo') ?? null;
+    let proximoMedicamento =
+      timelineHoje.find((item) => item.status === 'proximo') ?? null;
 
     if (!proximoMedicamento) {
-      proximoMedicamento = await this.findNextUpcoming(userId, today, familyMemberId ?? null);
+      proximoMedicamento = await this.findNextUpcoming(
+        userId,
+        today,
+        familyMemberId ?? null,
+      );
     }
 
-    const medicamentosTomadosHoje = timelineHoje.filter((item) => item.status === 'tomado').length;
+    const medicamentosTomadosHoje = timelineHoje.filter(
+      (item) => item.status === 'tomado',
+    ).length;
     const lembretesPendentesHoje = timelineHoje.filter((item) =>
       ['pendente', 'proximo', 'atrasado'].includes(item.status),
     ).length;
@@ -119,7 +147,11 @@ export class DashboardService {
       const dayOfWeek = nextDate.getDay();
 
       const candidates = medications
-        .filter((m) => m.diasSemana.includes(dayOfWeek) && isWithinRange(dateOnly, m.dataInicio, m.dataFim))
+        .filter(
+          (m) =>
+            m.diasSemana.includes(dayOfWeek) &&
+            isWithinRange(dateOnly, m.dataInicio, m.dataFim),
+        )
         .flatMap((m) =>
           m.horarios.map((horario) => ({
             medicationId: m.id,
@@ -138,5 +170,87 @@ export class DashboardService {
     }
 
     return null;
+  }
+
+  async getHistorico(
+    userId: string,
+    familyMemberId: string | null,
+    requestedDays: number | undefined,
+  ): Promise<HistoricoResult> {
+    // O limite de dias vem do plano do usuário — o parâmetro requestedDays
+    // do frontend nunca pode ultrapassá-lo.
+    const planLimitDays =
+      await this.subscriptionsService.getHistoryDaysLimit(userId);
+    const effectiveLimit = planLimitDays ?? HISTORY_HARD_CAP_DAYS;
+    const days = Math.max(
+      1,
+      Math.min(requestedDays ?? effectiveLimit, effectiveLimit),
+    );
+
+    const now = new Date();
+    const today = toDateOnlyString(now);
+    const scopeWhere = { userId, familyMemberId };
+
+    const medications = await this.prisma.medication.findMany({
+      where: scopeWhere,
+    });
+    if (medications.length === 0) {
+      return { items: [], totalDias: days, limiteDias: planLimitDays };
+    }
+
+    const startDate = combineDateAndTime(today, '00:00');
+    startDate.setDate(startDate.getDate() - (days - 1));
+
+    const doseRecords = await this.prisma.doseRecord.findMany({
+      where: {
+        userId,
+        medicationId: { in: medications.map((m) => m.id) },
+        scheduledFor: { gte: startDate },
+      },
+    });
+    const takenSet = new Set(
+      doseRecords.map((d) => d.scheduledFor.toISOString()),
+    );
+
+    const items: TimelineItem[] = [];
+
+    for (let i = 0; i < days; i += 1) {
+      const cursor = new Date(startDate);
+      cursor.setDate(cursor.getDate() + i);
+      const dateOnly = toDateOnlyString(cursor);
+      const dayOfWeek = cursor.getDay();
+
+      const relevant = medications.filter(
+        (m) =>
+          m.diasSemana.includes(dayOfWeek) &&
+          isWithinRange(dateOnly, m.dataInicio, m.dataFim),
+      );
+
+      for (const medication of relevant) {
+        for (const horario of medication.horarios) {
+          const scheduledFor = combineDateAndTime(dateOnly, horario);
+          if (scheduledFor > now) continue;
+
+          const isTaken = takenSet.has(scheduledFor.toISOString());
+          const minutesLate = (now.getTime() - scheduledFor.getTime()) / 60000;
+          if (!isTaken && minutesLate <= LATE_GRACE_MINUTES) continue;
+
+          const status: DoseStatus = isTaken ? 'tomado' : 'perdido';
+
+          items.push({
+            medicationId: medication.id,
+            nome: medication.nome,
+            dosagem: medication.dosagem,
+            horario,
+            scheduledFor: scheduledFor.toISOString(),
+            status,
+          });
+        }
+      }
+    }
+
+    items.sort((a, b) => b.scheduledFor.localeCompare(a.scheduledFor));
+
+    return { items, totalDias: days, limiteDias: planLimitDays };
   }
 }
