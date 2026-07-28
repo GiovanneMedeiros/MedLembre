@@ -11,25 +11,46 @@ enum MedicationStatus {
   PAUSADO
 }
 
+enum Plano {
+  GRATIS
+  ESSENCIAL
+  FAMILIA
+  PREMIUM
+}
+
+enum ReminderChannel {
+  WHATSAPP
+}
+
+enum ReminderStatus {
+  ENVIADO
+  FALHOU
+  SIMULADO
+}
+
 // userId referencia auth.users.id (gerenciado pelo Supabase Auth) —
 // não é uma FK do Prisma porque essa tabela vive fora do schema public.
 model Medication {
-  id          String            @id @default(uuid())
-  userId      String
-  nome        String
-  dosagem     String
-  observacao  String?
-  horarios    String[]
-  diasSemana  Int[]
-  dataInicio  DateTime          @db.Date
-  dataFim     DateTime?         @db.Date
-  status      MedicationStatus  @default(ATIVO)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id             String            @id @default(uuid())
+  userId         String
+  familyMemberId String?
+  nome           String
+  dosagem        String
+  observacao     String?
+  horarios       String[]
+  diasSemana     Int[]
+  dataInicio     DateTime          @db.Date
+  dataFim        DateTime?         @db.Date
+  status         MedicationStatus  @default(ATIVO)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
-  doseRecords DoseRecord[]
+  familyMember FamilyMember? @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  doseRecords  DoseRecord[]
+  reminderLogs ReminderLog[]
 
   @@index([userId])
+  @@index([familyMemberId])
   @@map("medications")
 }
 
@@ -40,9 +61,63 @@ model DoseRecord {
   scheduledFor DateTime
   takenAt      DateTime @default(now())
 
-  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  medication Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
 
   @@unique([medicationId, scheduledFor])
   @@index([userId, scheduledFor])
   @@map("dose_records")
+}
+
+// Representa o plano atual do usuário. Ainda sem cobrança real (Cakto
+// entra em etapa futura) — por enquanto todo usuário novo começa em
+// GRATIS e a mudança de plano é feita manualmente até a assinatura
+// real existir.
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  plano     Plano    @default(GRATIS)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+// Perfil de um familiar acompanhado pelo dono da conta (userId).
+// Não possui login próprio — é apenas um perfil dentro da conta do
+// responsável, disponível nos planos Família e Premium.
+model FamilyMember {
+  id        String   @id @default(uuid())
+  userId    String
+  nome      String
+  whatsapp  String
+  fotoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  medications Medication[]
+
+  @@index([userId])
+  @@map("family_members")
+}
+
+// Registra cada tentativa de envio de lembrete pelo WhatsApp e o
+// resultado (inclusive quando simulado, por falta de credenciais).
+model ReminderLog {
+  id                String          @id @default(uuid())
+  userId            String
+  medicationId      String
+  familyMemberId    String?
+  scheduledFor      DateTime
+  channel           ReminderChannel @default(WHATSAPP)
+  status            ReminderStatus
+  providerMessageId String?
+  snoozedUntil      DateTime?
+  errorMessage      String?
+  createdAt         DateTime        @default(now())
+
+  medication Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+
+  @@unique([medicationId, scheduledFor])
+  @@index([userId, scheduledFor])
+  @@map("reminder_logs")
 }
