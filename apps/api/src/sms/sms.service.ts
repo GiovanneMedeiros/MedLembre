@@ -1,13 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ReminderStatus } from '@prisma/client';
+import { ReminderChannel, ReminderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { WHATSAPP_PROVIDER, type WhatsAppProvider } from './providers/whatsapp-provider.interface';
-import {
-  buildConfirmationMessage,
-  buildReminderButtons,
-  buildReminderMessage,
-  buildSnoozeMessage,
-} from './templates/message-templates';
+import { SMS_PROVIDER, type SmsProvider } from './providers/sms-provider.interface';
+import { buildSmsReminderMessage } from './templates/sms-templates';
 
 interface SendMedicationReminderInput {
   userId: string;
@@ -20,11 +15,11 @@ interface SendMedicationReminderInput {
 }
 
 @Injectable()
-export class WhatsAppService {
-  private readonly logger = new Logger(WhatsAppService.name);
+export class SmsService {
+  private readonly logger = new Logger(SmsService.name);
 
   constructor(
-    @Inject(WHATSAPP_PROVIDER) private readonly provider: WhatsAppProvider,
+    @Inject(SMS_PROVIDER) private readonly provider: SmsProvider,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -33,10 +28,8 @@ export class WhatsAppService {
   }
 
   async sendMedicationReminder(input: SendMedicationReminderInput) {
-    const message = buildReminderMessage(input.medicationNome, input.horario);
-    const buttons = buildReminderButtons(input.medicationId, input.scheduledFor.toISOString());
-
-    const result = await this.provider.sendButtonsMessage(input.to, message, buttons);
+    const message = buildSmsReminderMessage(input.medicationNome, input.horario);
+    const result = await this.provider.sendTextMessage(input.to, message);
 
     const status: ReminderStatus = result.simulated
       ? ReminderStatus.SIMULADO
@@ -56,11 +49,13 @@ export class WhatsAppService {
         medicationId: input.medicationId,
         familyMemberId: input.familyMemberId,
         scheduledFor: input.scheduledFor,
+        channel: ReminderChannel.SMS,
         status,
         providerMessageId: result.providerMessageId,
         errorMessage: result.errorMessage,
       },
       update: {
+        channel: ReminderChannel.SMS,
         status,
         providerMessageId: result.providerMessageId,
         errorMessage: result.errorMessage,
@@ -69,21 +64,9 @@ export class WhatsAppService {
     });
 
     this.logger.log(
-      `Lembrete de "${input.medicationNome}" para ${input.to} às ${input.horario} — status: ${status}`,
+      `Lembrete de "${input.medicationNome}" via SMS para ${input.to} às ${input.horario} — status: ${status}`,
     );
 
     return result;
-  }
-
-  async sendMedicationConfirmation(to: string, medicationNome: string) {
-    return this.provider.sendTextMessage(to, buildConfirmationMessage(medicationNome));
-  }
-
-  async sendMedicationSnooze(to: string, medicationNome: string, minutes = 10) {
-    return this.provider.sendTextMessage(to, buildSnoozeMessage(medicationNome, minutes));
-  }
-
-  async sendFamilyNotification(to: string, message: string) {
-    return this.provider.sendTextMessage(to, message);
   }
 }

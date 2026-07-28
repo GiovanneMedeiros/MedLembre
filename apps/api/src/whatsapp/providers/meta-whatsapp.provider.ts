@@ -15,7 +15,7 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
     this.phoneNumberId = this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID') || undefined;
   }
 
-  private isConfigured(): boolean {
+  isConfigured(): boolean {
     return Boolean(this.accessToken && this.phoneNumberId);
   }
 
