@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MedicationStatus {
+  ATIVO
+  PAUSADO
+}
+
+// userId referencia auth.users.id (gerenciado pelo Supabase Auth) —
+// não é uma FK do Prisma porque essa tabela vive fora do schema public.
+model Medication {
+  id          String            @id @default(uuid())
+  userId      String
+  nome        String
+  dosagem     String
+  observacao  String?
+  horarios    String[]
+  diasSemana  Int[]
+  dataInicio  DateTime          @db.Date
+  dataFim     DateTime?         @db.Date
+  status      MedicationStatus  @default(ATIVO)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  doseRecords DoseRecord[]
+
+  @@index([userId])
+  @@map("medications")
+}
+
+model DoseRecord {
+  id           String   @id @default(uuid())
+  medicationId String
+  userId       String
+  scheduledFor DateTime
+  takenAt      DateTime @default(now())
+
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+
+  @@unique([medicationId, scheduledFor])
+  @@index([userId, scheduledFor])
+  @@map("dose_records")
+}

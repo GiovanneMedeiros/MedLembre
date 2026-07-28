@@ -1,0 +1,118 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { MedicationStatus } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateMedicationDto } from './dto/create-medication.dto';
+import { UpdateMedicationDto } from './dto/update-medication.dto';
+
+@Injectable()
+export class MedicationsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private assertValidDateRange(dataInicio?: string, dataFim?: string | null) {
+    if (dataInicio && dataFim && new Date(dataFim) < new Date(dataInicio)) {
+      throw new BadRequestException('A data de término não pode ser anterior à data de início');
+    }
+  }
+
+  async findAll(userId: string) {
+    return this.prisma.medication.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findOneOrThrow(userId: string, id: string) {
+    const medication = await this.prisma.medication.findFirst({
+      where: { id, userId },
+    });
+
+    if (!medication) {
+      throw new NotFoundException('Medicamento não encontrado');
+    }
+
+    return medication;
+  }
+
+  async create(userId: string, dto: CreateMedicationDto) {
+    this.assertValidDateRange(dto.dataInicio, dto.dataFim);
+
+    return this.prisma.medication.create({
+      data: {
+        userId,
+        nome: dto.nome,
+        dosagem: dto.dosagem,
+        observacao: dto.observacao,
+        horarios: dto.horarios,
+        diasSemana: dto.diasSemana,
+        dataInicio: new Date(dto.dataInicio),
+        dataFim: dto.dataFim ? new Date(dto.dataFim) : null,
+      },
+    });
+  }
+
+  async update(userId: string, id: string, dto: UpdateMedicationDto) {
+    const existing = await this.findOneOrThrow(userId, id);
+
+    const dataInicio = dto.dataInicio ?? existing.dataInicio.toISOString();
+    const dataFim = dto.dataFim ?? (existing.dataFim ? existing.dataFim.toISOString() : null);
+    this.assertValidDateRange(dataInicio, dataFim);
+
+    return this.prisma.medication.update({
+      where: { id: existing.id },
+      data: {
+        nome: dto.nome,
+        dosagem: dto.dosagem,
+        observacao: dto.observacao,
+        horarios: dto.horarios,
+        diasSemana: dto.diasSemana,
+        dataInicio: dto.dataInicio ? new Date(dto.dataInicio) : undefined,
+        dataFim: dto.dataFim !== undefined ? (dto.dataFim ? new Date(dto.dataFim) : null) : undefined,
+      },
+    });
+  }
+
+  async updateStatus(userId: string, id: string, status: MedicationStatus) {
+    await this.findOneOrThrow(userId, id);
+
+    return this.prisma.medication.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
+  async remove(userId: string, id: string) {
+    await this.findOneOrThrow(userId, id);
+    await this.prisma.medication.delete({ where: { id } });
+  }
+
+  async markDoseTaken(userId: string, medicationId: string, scheduledFor: string) {
+    await this.findOneOrThrow(userId, medicationId);
+
+    return this.prisma.doseRecord.upsert({
+      where: {
+        medicationId_scheduledFor: {
+          medicationId,
+          scheduledFor: new Date(scheduledFor),
+        },
+      },
+      create: {
+        medicationId,
+        userId,
+        scheduledFor: new Date(scheduledFor),
+      },
+      update: {},
+    });
+  }
+
+  async unmarkDose(userId: string, medicationId: string, scheduledFor: string) {
+    await this.findOneOrThrow(userId, medicationId);
+
+    await this.prisma.doseRecord.deleteMany({
+      where: {
+        medicationId,
+        userId,
+        scheduledFor: new Date(scheduledFor),
+      },
+    });
+  }
+}
