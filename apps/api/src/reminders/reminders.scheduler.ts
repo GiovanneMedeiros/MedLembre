@@ -9,6 +9,7 @@ import {
 } from '../common/medication-schedule.util';
 import { toWhatsAppNumber } from '../common/phone.util';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from '../push/push.service';
 import { SmsService } from '../sms/sms.service';
 import { SupabaseAdminService } from '../supabase-admin/supabase-admin.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
@@ -24,6 +25,7 @@ export class RemindersScheduler {
     private readonly supabaseAdmin: SupabaseAdminService,
     private readonly whatsapp: WhatsAppService,
     private readonly sms: SmsService,
+    private readonly push: PushService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -83,6 +85,14 @@ export class RemindersScheduler {
   }
 
   private async dispatchReminder(medication: MedicationWithFamily, scheduledFor: Date, horario: string) {
+    // Push é gratuito e só alcança o navegador do dono da conta (familiares
+    // não têm login próprio), então é enviado sempre, em paralelo ao canal
+    // de telefone — funciona mesmo se WhatsApp/SMS não estiverem configurados.
+    this.push.sendMedicationReminder(medication.userId, medication.id, medication.nome, horario).catch((error) => {
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(`Falha ao enviar push para o usuário ${medication.userId}: ${message}`);
+    });
+
     const phoneDigits =
       medication.familyMember?.whatsapp ??
       (await this.supabaseAdmin.getOwnerContact(medication.userId)).whatsapp;

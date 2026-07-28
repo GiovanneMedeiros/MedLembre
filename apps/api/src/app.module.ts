@@ -11,6 +11,7 @@ import { FamilyMembersModule } from './family-members/family-members.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { SupabaseAdminModule } from './supabase-admin/supabase-admin.module';
 import { WhatsAppModule } from './whatsapp/whatsapp.module';
+import { PushModule } from './push/push.module';
 import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { RemindersModule } from './reminders/reminders.module';
     SubscriptionsModule,
     FamilyMembersModule,
     WhatsAppModule,
+    PushModule,
     RemindersModule,
   ],
   controllers: [AppController],

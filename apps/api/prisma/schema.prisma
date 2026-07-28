@@ -122,3 +122,18 @@ model ReminderLog {
   @@index([userId, scheduledFor])
   @@map("reminder_logs")
 }
+
+// Inscrição de um navegador do dono da conta para receber notificações
+// push. Só o dono recebe push (familiares não têm login próprio), como
+// um canal extra e gratuito além do WhatsApp/SMS.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
