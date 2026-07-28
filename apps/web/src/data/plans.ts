@@ -1,0 +1,64 @@
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  annualPrice: number | null;
+  highlighted?: boolean;
+  features: string[];
+}
+
+export const PLANS: Plan[] = [
+  {
+    id: "gratis",
+    name: "Grátis",
+    description: "Para experimentar o MedLembre sem compromisso.",
+    monthlyPrice: 0,
+    annualPrice: null,
+    features: ["1 medicamento cadastrado", "Lembretes por WhatsApp", "1 perfil", "Histórico dos últimos 7 dias"],
+  },
+  {
+    id: "essencial",
+    name: "Essencial",
+    description: "Ideal para organizar sua própria rotina de medicamentos.",
+    monthlyPrice: 39.9,
+    annualPrice: 359,
+    highlighted: true,
+    features: [
+      "Até 5 medicamentos",
+      "Lembretes ilimitados por WhatsApp",
+      "1 perfil",
+      "Histórico de 30 dias",
+      "Suporte por e-mail",
+    ],
+  },
+  {
+    id: "familia",
+    name: "Família",
+    description: "Para cuidar da sua rotina e da de quem você ama.",
+    monthlyPrice: 59.9,
+    annualPrice: 539,
+    features: [
+      "Medicamentos ilimitados",
+      "Lembretes ilimitados por WhatsApp",
+      "Até 5 perfis familiares",
+      "Histórico de 90 dias",
+      "Suporte prioritário",
+    ],
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    description: "Máximo de recursos para famílias com rotinas mais complexas.",
+    monthlyPrice: 79.9,
+    annualPrice: 719,
+    features: [
+      "Tudo do plano Família",
+      "Perfis familiares ilimitados",
+      "Histórico completo",
+      "Suporte prioritário via WhatsApp",
+    ],
+  },
+];
+
+export const ANNUAL_DISCOUNT_LABEL = "Economize 25%";
