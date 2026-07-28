@@ -1,4 +1,5 @@
-export type DoseStatus = 'tomado' | 'pendente' | 'atrasado' | 'proximo';
+export type DoseStatus =
+  'tomado' | 'pendente' | 'atrasado' | 'proximo' | 'perdido';
 
 export interface TimelineItem {
   medicationId: string;
@@ -15,4 +16,10 @@ export interface DashboardSummary {
   lembretesPendentesHoje: number;
   proximoMedicamento: TimelineItem | null;
   timelineHoje: TimelineItem[];
+}
+
+export interface HistoricoResult {
+  items: TimelineItem[];
+  totalDias: number;
+  limiteDias: number | null;
 }

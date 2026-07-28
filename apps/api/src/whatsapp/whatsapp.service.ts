@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ReminderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { WHATSAPP_PROVIDER, type WhatsAppProvider } from './providers/whatsapp-provider.interface';
+import {
+  WHATSAPP_PROVIDER,
+  type WhatsAppProvider,
+} from './providers/whatsapp-provider.interface';
 import {
   buildConfirmationMessage,
   buildReminderButtons,
@@ -34,9 +37,16 @@ export class WhatsAppService {
 
   async sendMedicationReminder(input: SendMedicationReminderInput) {
     const message = buildReminderMessage(input.medicationNome, input.horario);
-    const buttons = buildReminderButtons(input.medicationId, input.scheduledFor.toISOString());
+    const buttons = buildReminderButtons(
+      input.medicationId,
+      input.scheduledFor.toISOString(),
+    );
 
-    const result = await this.provider.sendButtonsMessage(input.to, message, buttons);
+    const result = await this.provider.sendButtonsMessage(
+      input.to,
+      message,
+      buttons,
+    );
 
     const status: ReminderStatus = result.simulated
       ? ReminderStatus.SIMULADO
@@ -76,11 +86,17 @@ export class WhatsAppService {
   }
 
   async sendMedicationConfirmation(to: string, medicationNome: string) {
-    return this.provider.sendTextMessage(to, buildConfirmationMessage(medicationNome));
+    return this.provider.sendTextMessage(
+      to,
+      buildConfirmationMessage(medicationNome),
+    );
   }
 
   async sendMedicationSnooze(to: string, medicationNome: string, minutes = 10) {
-    return this.provider.sendTextMessage(to, buildSnoozeMessage(medicationNome, minutes));
+    return this.provider.sendTextMessage(
+      to,
+      buildSnoozeMessage(medicationNome, minutes),
+    );
   }
 
   async sendFamilyNotification(to: string, message: string) {

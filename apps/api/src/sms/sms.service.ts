@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ReminderChannel, ReminderStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { SMS_PROVIDER, type SmsProvider } from './providers/sms-provider.interface';
+import {
+  SMS_PROVIDER,
+  type SmsProvider,
+} from './providers/sms-provider.interface';
 import { buildSmsReminderMessage } from './templates/sms-templates';
 
 interface SendMedicationReminderInput {
@@ -28,7 +31,10 @@ export class SmsService {
   }
 
   async sendMedicationReminder(input: SendMedicationReminderInput) {
-    const message = buildSmsReminderMessage(input.medicationNome, input.horario);
+    const message = buildSmsReminderMessage(
+      input.medicationNome,
+      input.horario,
+    );
     const result = await this.provider.sendTextMessage(input.to, message);
 
     const status: ReminderStatus = result.simulated

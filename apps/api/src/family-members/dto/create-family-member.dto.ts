@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsUrl, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateFamilyMemberDto {
   @IsString()
@@ -7,7 +14,9 @@ export class CreateFamilyMemberDto {
   nome: string;
 
   @IsString()
-  @Matches(/^\d{10,11}$/, { message: 'Informe um WhatsApp válido, com DDD (somente números)' })
+  @Matches(/^\d{10,11}$/, {
+    message: 'Informe um WhatsApp válido, com DDD (somente números)',
+  })
   whatsapp: string;
 
   @IsOptional()

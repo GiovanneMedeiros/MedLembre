@@ -18,7 +18,10 @@ import type { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { MedicationsService } from '../medications/medications.service';
 import { WhatsAppService } from './whatsapp.service';
-import { decodeButtonId, type DecodedButtonId } from './templates/message-templates';
+import {
+  decodeButtonId,
+  type DecodedButtonId,
+} from './templates/message-templates';
 
 interface IncomingMessage {
   from?: string;
@@ -61,16 +64,23 @@ export class WhatsAppWebhookController {
       return res.status(HttpStatus.OK).send(challenge);
     }
 
-    return res.status(HttpStatus.FORBIDDEN).send('Token de verificação inválido');
+    return res
+      .status(HttpStatus.FORBIDDEN)
+      .send('Token de verificação inválido');
   }
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  async receive(@Req() req: RawBodyRequest<Request>, @Body() payload: WhatsAppWebhookPayload) {
+  async receive(
+    @Req() req: RawBodyRequest<Request>,
+    @Body() payload: WhatsAppWebhookPayload,
+  ) {
     this.assertValidSignature(req);
 
     const messages =
-      payload.entry?.flatMap((entry) => entry.changes ?? []).flatMap((change) => change.value?.messages ?? []) ?? [];
+      payload.entry
+        ?.flatMap((entry) => entry.changes ?? [])
+        .flatMap((change) => change.value?.messages ?? []) ?? [];
 
     for (const message of messages) {
       const buttonReply = message.interactive?.button_reply;
@@ -88,7 +98,9 @@ export class WhatsAppWebhookController {
   private assertValidSignature(req: RawBodyRequest<Request>) {
     const appSecret = this.configService.get<string>('WHATSAPP_APP_SECRET');
     if (!appSecret) {
-      this.logger.warn('WHATSAPP_APP_SECRET não configurado — assinatura do webhook não verificada.');
+      this.logger.warn(
+        'WHATSAPP_APP_SECRET não configurado — assinatura do webhook não verificada.',
+      );
       return;
     }
 
@@ -102,7 +114,10 @@ export class WhatsAppWebhookController {
     const expectedSignature = `sha256=${createHmac('sha256', appSecret).update(rawBody).digest('hex')}`;
     const isValid =
       signatureHeader.length === expectedSignature.length &&
-      timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expectedSignature));
+      timingSafeEqual(
+        Buffer.from(signatureHeader),
+        Buffer.from(expectedSignature),
+      );
 
     if (!isValid) {
       throw new UnauthorizedException('Assinatura do webhook inválida');
@@ -110,26 +125,48 @@ export class WhatsAppWebhookController {
   }
 
   private async handleButtonReply(decoded: DecodedButtonId, from: string) {
-    const medication = await this.prisma.medication.findUnique({ where: { id: decoded.medicationId } });
+    const medication = await this.prisma.medication.findUnique({
+      where: { id: decoded.medicationId },
+    });
     if (!medication) {
-      this.logger.warn(`Medicamento ${decoded.medicationId} não encontrado para resposta de webhook.`);
+      this.logger.warn(
+        `Medicamento ${decoded.medicationId} não encontrado para resposta de webhook.`,
+      );
       return;
     }
 
     if (decoded.action === 'TOMEI') {
-      await this.medicationsService.markDoseTaken(medication.userId, medication.id, decoded.scheduledFor);
-      await this.whatsappService.sendMedicationConfirmation(from, medication.nome);
-      this.logger.log(`Dose confirmada via WhatsApp: ${medication.nome} (${decoded.scheduledFor})`);
+      await this.medicationsService.markDoseTaken(
+        medication.userId,
+        medication.id,
+        decoded.scheduledFor,
+      );
+      await this.whatsappService.sendMedicationConfirmation(
+        from,
+        medication.nome,
+      );
+      this.logger.log(
+        `Dose confirmada via WhatsApp: ${medication.nome} (${decoded.scheduledFor})`,
+      );
       return;
     }
 
     if (decoded.action === 'SNOOZE') {
       await this.prisma.reminderLog.updateMany({
-        where: { medicationId: medication.id, scheduledFor: new Date(decoded.scheduledFor) },
+        where: {
+          medicationId: medication.id,
+          scheduledFor: new Date(decoded.scheduledFor),
+        },
         data: { snoozedUntil: new Date(Date.now() + 10 * 60_000) },
       });
-      await this.whatsappService.sendMedicationSnooze(from, medication.nome, 10);
-      this.logger.log(`Lembrete adiado via WhatsApp: ${medication.nome} (${decoded.scheduledFor})`);
+      await this.whatsappService.sendMedicationSnooze(
+        from,
+        medication.nome,
+        10,
+      );
+      this.logger.log(
+        `Lembrete adiado via WhatsApp: ${medication.nome} (${decoded.scheduledFor})`,
+      );
     }
   }
 }

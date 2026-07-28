@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { SendMessageResult, WhatsAppButton, WhatsAppProvider } from './whatsapp-provider.interface';
+import type {
+  SendMessageResult,
+  WhatsAppButton,
+  WhatsAppProvider,
+} from './whatsapp-provider.interface';
 
 const GRAPH_API_VERSION = 'v21.0';
 
@@ -11,8 +15,10 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
   private readonly phoneNumberId?: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.accessToken = this.configService.get<string>('WHATSAPP_ACCESS_TOKEN') || undefined;
-    this.phoneNumberId = this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID') || undefined;
+    this.accessToken =
+      this.configService.get<string>('WHATSAPP_ACCESS_TOKEN') || undefined;
+    this.phoneNumberId =
+      this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID') || undefined;
   }
 
   isConfigured(): boolean {
@@ -28,7 +34,11 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
     });
   }
 
-  async sendButtonsMessage(to: string, body: string, buttons: WhatsAppButton[]): Promise<SendMessageResult> {
+  async sendButtonsMessage(
+    to: string,
+    body: string,
+    buttons: WhatsAppButton[],
+  ): Promise<SendMessageResult> {
     return this.send(to, {
       messaging_product: 'whatsapp',
       to,
@@ -46,7 +56,10 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
     });
   }
 
-  private async send(to: string, payload: Record<string, unknown>): Promise<SendMessageResult> {
+  private async send(
+    to: string,
+    payload: Record<string, unknown>,
+  ): Promise<SendMessageResult> {
     if (!this.isConfigured()) {
       this.logger.warn(
         `[SIMULADO] WhatsApp não configurado (WHATSAPP_ACCESS_TOKEN/WHATSAPP_PHONE_NUMBER_ID ausentes). Mensagem para ${to} não enviada de verdade.`,
@@ -67,20 +80,26 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
         },
       );
 
-      const data = (await response.json().catch(() => null)) as
-        | { messages?: { id: string }[]; error?: { message?: string } }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        messages?: { id: string }[];
+        error?: { message?: string };
+      } | null;
 
       if (!response.ok) {
         const errorMessage = data?.error?.message ?? `HTTP ${response.status}`;
-        this.logger.error(`Falha ao enviar WhatsApp para ${to}: ${errorMessage}`);
+        this.logger.error(
+          `Falha ao enviar WhatsApp para ${to}: ${errorMessage}`,
+        );
         return { simulated: false, errorMessage };
       }
 
       return { simulated: false, providerMessageId: data?.messages?.[0]?.id };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      this.logger.error(`Erro de rede ao enviar WhatsApp para ${to}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(
+        `Erro de rede ao enviar WhatsApp para ${to}: ${errorMessage}`,
+      );
       return { simulated: false, errorMessage };
     }
   }

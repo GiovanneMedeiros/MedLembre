@@ -39,7 +39,10 @@ export class MedicationsController {
   }
 
   @Post()
-  create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateMedicationDto) {
+  create(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateMedicationDto,
+  ) {
     return this.medicationsService.create(user.id, dto);
   }
 
@@ -63,7 +66,10 @@ export class MedicationsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+  async remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
     await this.medicationsService.remove(user.id, id);
   }
 

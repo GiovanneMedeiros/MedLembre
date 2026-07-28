@@ -1,20 +1,33 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MedicationStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateMedicationDto } from './dto/update-medication.dto';
 
 @Injectable()
 export class MedicationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptionsService: SubscriptionsService,
+  ) {}
 
   private assertValidDateRange(dataInicio?: string, dataFim?: string | null) {
     if (dataInicio && dataFim && new Date(dataFim) < new Date(dataInicio)) {
-      throw new BadRequestException('A data de término não pode ser anterior à data de início');
+      throw new BadRequestException(
+        'A data de término não pode ser anterior à data de início',
+      );
     }
   }
 
-  private async assertFamilyMemberOwnership(userId: string, familyMemberId?: string) {
+  private async assertFamilyMemberOwnership(
+    userId: string,
+    familyMemberId?: string,
+  ) {
     if (!familyMemberId) return;
 
     const member = await this.prisma.familyMember.findFirst({
@@ -48,6 +61,7 @@ export class MedicationsService {
   async create(userId: string, dto: CreateMedicationDto) {
     this.assertValidDateRange(dto.dataInicio, dto.dataFim);
     await this.assertFamilyMemberOwnership(userId, dto.familyMemberId);
+    await this.subscriptionsService.assertCanCreateMedication(userId);
 
     return this.prisma.medication.create({
       data: {
@@ -68,7 +82,8 @@ export class MedicationsService {
     const existing = await this.findOneOrThrow(userId, id);
 
     const dataInicio = dto.dataInicio ?? existing.dataInicio.toISOString();
-    const dataFim = dto.dataFim ?? (existing.dataFim ? existing.dataFim.toISOString() : null);
+    const dataFim =
+      dto.dataFim ?? (existing.dataFim ? existing.dataFim.toISOString() : null);
     this.assertValidDateRange(dataInicio, dataFim);
 
     return this.prisma.medication.update({
@@ -80,7 +95,12 @@ export class MedicationsService {
         horarios: dto.horarios,
         diasSemana: dto.diasSemana,
         dataInicio: dto.dataInicio ? new Date(dto.dataInicio) : undefined,
-        dataFim: dto.dataFim !== undefined ? (dto.dataFim ? new Date(dto.dataFim) : null) : undefined,
+        dataFim:
+          dto.dataFim !== undefined
+            ? dto.dataFim
+              ? new Date(dto.dataFim)
+              : null
+            : undefined,
       },
     });
   }
@@ -99,7 +119,11 @@ export class MedicationsService {
     await this.prisma.medication.delete({ where: { id } });
   }
 
-  async markDoseTaken(userId: string, medicationId: string, scheduledFor: string) {
+  async markDoseTaken(
+    userId: string,
+    medicationId: string,
+    scheduledFor: string,
+  ) {
     await this.findOneOrThrow(userId, medicationId);
 
     return this.prisma.doseRecord.upsert({

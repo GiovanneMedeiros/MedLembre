@@ -50,16 +50,27 @@ export class RemindersScheduler {
     });
 
     for (const medication of medications) {
-      if (!isWithinRange(today, medication.dataInicio, medication.dataFim)) continue;
+      if (!isWithinRange(today, medication.dataInicio, medication.dataFim))
+        continue;
 
       const scheduledFor = combineDateAndTime(today, horarioAtual);
 
       const [alreadyLogged, alreadyTaken] = await Promise.all([
         this.prisma.reminderLog.findUnique({
-          where: { medicationId_scheduledFor: { medicationId: medication.id, scheduledFor } },
+          where: {
+            medicationId_scheduledFor: {
+              medicationId: medication.id,
+              scheduledFor,
+            },
+          },
         }),
         this.prisma.doseRecord.findUnique({
-          where: { medicationId_scheduledFor: { medicationId: medication.id, scheduledFor } },
+          where: {
+            medicationId_scheduledFor: {
+              medicationId: medication.id,
+              scheduledFor,
+            },
+          },
         }),
       ]);
       if (alreadyLogged || alreadyTaken) continue;
@@ -76,22 +87,45 @@ export class RemindersScheduler {
 
     for (const log of dueSnoozed) {
       const alreadyTaken = await this.prisma.doseRecord.findUnique({
-        where: { medicationId_scheduledFor: { medicationId: log.medicationId, scheduledFor: log.scheduledFor } },
+        where: {
+          medicationId_scheduledFor: {
+            medicationId: log.medicationId,
+            scheduledFor: log.scheduledFor,
+          },
+        },
       });
       if (alreadyTaken) continue;
 
-      await this.dispatchReminder(log.medication, log.scheduledFor, currentTimeString(log.scheduledFor));
+      await this.dispatchReminder(
+        log.medication,
+        log.scheduledFor,
+        currentTimeString(log.scheduledFor),
+      );
     }
   }
 
-  private async dispatchReminder(medication: MedicationWithFamily, scheduledFor: Date, horario: string) {
+  private async dispatchReminder(
+    medication: MedicationWithFamily,
+    scheduledFor: Date,
+    horario: string,
+  ) {
     // Push é gratuito e só alcança o navegador do dono da conta (familiares
     // não têm login próprio), então é enviado sempre, em paralelo ao canal
     // de telefone — funciona mesmo se WhatsApp/SMS não estiverem configurados.
-    this.push.sendMedicationReminder(medication.userId, medication.id, medication.nome, horario).catch((error) => {
-      const message = error instanceof Error ? error.message : 'Erro desconhecido';
-      this.logger.error(`Falha ao enviar push para o usuário ${medication.userId}: ${message}`);
-    });
+    this.push
+      .sendMedicationReminder(
+        medication.userId,
+        medication.id,
+        medication.nome,
+        horario,
+      )
+      .catch((error) => {
+        const message =
+          error instanceof Error ? error.message : 'Erro desconhecido';
+        this.logger.error(
+          `Falha ao enviar push para o usuário ${medication.userId}: ${message}`,
+        );
+      });
 
     const phoneDigits =
       medication.familyMember?.whatsapp ??
@@ -117,7 +151,10 @@ export class RemindersScheduler {
     // para SMS (Twilio) se disponível. Sem nenhum dos dois, o envio pelo
     // WhatsApp entra em modo simulado (apenas registra no ReminderLog).
     if (this.whatsapp.isConfigured() || !this.sms.isConfigured()) {
-      await this.whatsapp.sendMedicationReminder({ ...baseInput, to: toWhatsAppNumber(phoneDigits) });
+      await this.whatsapp.sendMedicationReminder({
+        ...baseInput,
+        to: toWhatsAppNumber(phoneDigits),
+      });
       return;
     }
 
