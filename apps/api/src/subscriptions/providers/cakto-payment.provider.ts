@@ -12,23 +12,29 @@ import type {
 } from './payment-provider.interface';
 
 interface CaktoWebhookPayload {
+  secret?: string;
   event?: string;
   data?: {
     id?: string;
     customer?: {
       name?: string;
       email?: string;
+      phone?: string;
       docNumber?: string;
-      id?: string;
     };
-    amount?: number;
+    offer?: { id?: string; name?: string };
+    product?: { id?: string; name?: string; type?: string };
+    subscription?: {
+      id?: string;
+      status?: string;
+      nextChargeAt?: string;
+    } | null;
     status?: string;
     paidAt?: string;
-    renewedAt?: string;
-    chargedAt?: string;
-    nextChargeAt?: string;
-    updatedAt?: string;
     createdAt?: string;
+    canceledAt?: string;
+    refundedAt?: string;
+    chargedbackAt?: string;
   };
 }
 
@@ -57,23 +63,23 @@ const EVENT_TYPE_MAP: Record<string, PaymentEventType> = {
  * Subscription.email/pendingPlano em subscriptions.service.ts) em vez de
  * confiar em metadata que o provedor não fornece.
  *
- * A Cakto não documenta publicamente um esquema de assinatura HMAC para
- * webhooks recebidos, então a autenticidade é validada por um token
- * compartilhado embutido na própria URL do webhook cadastrada no painel
- * deles (ex: https://sua-api/webhooks/payments/cakto?token=SEGREDO),
- * comparado aqui em tempo constante.
- *
- * IMPORTANTE: os nomes de campo do payload (data.id, data.customer.email,
- * etc.) foram confirmados apenas para o evento "purchase_approved" na
- * documentação pública da Cakto. Recomendado validar com um webhook de
- * teste real (painel Cakto → Integrações → Webhooks → Testar) e ajustar
- * aqui se os eventos de assinatura usarem nomes de campo diferentes.
+ * Autenticidade: a Cakto envia a "Chave secreta do webhook" (configurada no
+ * painel deles, Integrações → Webhooks) como o campo `secret` no próprio
+ * corpo JSON — não como header nem assinatura HMAC. Confirmado via preview
+ * de payload do painel (2026-07-29):
+ * {
+ *   "secret": "...", "event": "purchase_approved",
+ *   "data": { "id": "...", "customer": { "email": "...", "docNumber": "..." },
+ *     "subscription": null | { "id": "...", "nextChargeAt": "..." }, "paidAt": "..." }
+ * }
+ * "data.id" é o ID do PEDIDO, não da assinatura — o ID de assinatura fica em
+ * "data.subscription.id" quando presente.
  */
 @Injectable()
 export class CaktoPaymentProvider implements PaymentProvider {
   private readonly logger = new Logger(CaktoPaymentProvider.name);
   private readonly checkoutUrls: Partial<Record<string, string>>;
-  private readonly webhookToken?: string;
+  private readonly webhookSecret?: string;
 
   constructor(private readonly configService: ConfigService) {
     this.checkoutUrls = {
@@ -96,7 +102,7 @@ export class CaktoPaymentProvider implements PaymentProvider {
         'CAKTO_CHECKOUT_URL_PREMIUM_ANUAL',
       ),
     };
-    this.webhookToken = this.env('CAKTO_WEBHOOK_TOKEN');
+    this.webhookSecret = this.env('CAKTO_WEBHOOK_TOKEN');
   }
 
   private env(name: string): string | undefined {
@@ -146,17 +152,24 @@ export class CaktoPaymentProvider implements PaymentProvider {
   }
 
   verifyWebhookSignature(data: WebhookRequestData): boolean {
-    if (!this.webhookToken) {
+    if (!this.webhookSecret) {
       this.logger.error(
         'CAKTO_WEBHOOK_TOKEN não configurado — recusando todos os webhooks de pagamento por segurança.',
       );
       return false;
     }
 
-    const provided = data.query.token;
+    let payload: CaktoWebhookPayload;
+    try {
+      payload = JSON.parse(data.rawBody.toString('utf8')) as CaktoWebhookPayload;
+    } catch {
+      return false;
+    }
+
+    const provided = payload.secret;
     if (typeof provided !== 'string') return false;
 
-    const expected = this.webhookToken;
+    const expected = this.webhookSecret;
     return (
       provided.length === expected.length &&
       timingSafeEqual(Buffer.from(provided), Buffer.from(expected))
@@ -169,30 +182,35 @@ export class CaktoPaymentProvider implements PaymentProvider {
     ) as CaktoWebhookPayload;
 
     const rawEvent = payload.event ?? '';
-    const objectId = payload.data?.id ?? '';
+    const orderId = payload.data?.id ?? '';
     const timestamp =
       payload.data?.paidAt ??
-      payload.data?.renewedAt ??
-      payload.data?.chargedAt ??
-      payload.data?.updatedAt ??
+      payload.data?.canceledAt ??
+      payload.data?.refundedAt ??
+      payload.data?.chargedbackAt ??
       payload.data?.createdAt ??
       '';
 
+    // Nunca persiste o segredo compartilhado fora da verificação de
+    // assinatura — ele não deve acabar armazenado no log de auditoria
+    // (PaymentEvent.rawPayload).
+    const { secret: _secret, ...rawWithoutSecret } = payload;
+
     return {
-      // Combina evento + objeto + timestamp: a Cakto não expõe um id de
-      // entrega de webhook no corpo (apenas no histórico do painel deles),
-      // e reaproveitar só "evento:id" colidiria entre renovações mensais
-      // da mesma assinatura.
-      providerEventId: objectId ? `${rawEvent}:${objectId}:${timestamp}` : '',
+      // Combina evento + pedido + timestamp: a Cakto não expõe um id de
+      // entrega de webhook no corpo (só no histórico do painel deles), e
+      // reaproveitar só "evento:pedido" colidiria entre renovações da
+      // mesma assinatura.
+      providerEventId: orderId ? `${rawEvent}:${orderId}:${timestamp}` : '',
       type: EVENT_TYPE_MAP[rawEvent] ?? 'DESCONHECIDO',
       payerEmail: payload.data?.customer?.email,
-      providerCustomerId:
-        payload.data?.customer?.id ?? payload.data?.customer?.docNumber,
-      providerSubscriptionId: objectId || undefined,
-      currentPeriodEnd: payload.data?.nextChargeAt
-        ? new Date(payload.data.nextChargeAt)
+      providerCustomerId: payload.data?.customer?.docNumber,
+      providerSubscriptionId:
+        (payload.data?.subscription?.id ?? orderId) || undefined,
+      currentPeriodEnd: payload.data?.subscription?.nextChargeAt
+        ? new Date(payload.data.subscription.nextChargeAt)
         : undefined,
-      raw: payload,
+      raw: rawWithoutSecret,
     };
   }
 }
