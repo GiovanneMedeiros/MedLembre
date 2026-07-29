@@ -8,5 +8,6 @@ build/
 *.log
 .DS_Store
 coverage/
+*.tsbuildinfo
 .vscode/*
 !.vscode/extensions.json
