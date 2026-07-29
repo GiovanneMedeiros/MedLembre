@@ -14,3 +14,7 @@ export const PLAN_LIMITS: Record<Plano, PlanLimits> = {
   FAMILIA: { maxMedications: null, maxFamilyMembers: 5, historyDays: 90 },
   PREMIUM: { maxMedications: null, maxFamilyMembers: null, historyDays: null },
 };
+
+// O plano Grátis funciona como um teste temporário: passadas essas horas
+// desde a criação da assinatura, o acesso é bloqueado até o upgrade.
+export const FREE_TRIAL_HOURS = 48;

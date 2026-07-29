@@ -34,6 +34,8 @@ export class SubscriptionsController {
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       hasFamilyAccess,
+      trialExpiresAt: this.subscriptionsService.trialExpiresAt(subscription),
+      trialExpired: this.subscriptionsService.isTrialExpired(subscription),
     };
   }
 

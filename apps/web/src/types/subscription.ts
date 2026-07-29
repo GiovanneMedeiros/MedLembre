@@ -9,6 +9,8 @@ export interface SubscriptionInfo {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   hasFamilyAccess: boolean;
+  trialExpiresAt: string | null;
+  trialExpired: boolean;
 }
 
 export interface CheckoutResult {
