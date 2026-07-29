@@ -20,6 +20,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   updatePassword: (novaSenha: string) => Promise<void>;
+  updateProfile: (input: { nome: string; telefone: string }) => Promise<void>;
   clearPasswordRecovery: () => void;
 }
 
@@ -86,6 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }
 
+  async function updateProfile({ nome, telefone }: { nome: string; telefone: string }) {
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        nome,
+        whatsapp: telefone.trim() ? normalizePhoneDigits(telefone) : null,
+      },
+    });
+    if (error) throw error;
+  }
+
   function clearPasswordRecovery() {
     setIsPasswordRecovery(false);
   }
@@ -100,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     requestPasswordReset,
     updatePassword,
+    updateProfile,
     clearPasswordRecovery,
   };
 

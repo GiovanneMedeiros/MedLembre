@@ -47,4 +47,15 @@ export class SupabaseAdminService {
       whatsapp: (metadata.whatsapp as string | undefined) ?? null,
     };
   }
+
+  async deleteUser(userId: string): Promise<void> {
+    if (!this.client) {
+      throw new Error('Supabase admin não configurado — não é possível excluir a conta.');
+    }
+
+    const { error } = await this.client.auth.admin.deleteUser(userId);
+    if (error) {
+      throw new Error(`Falha ao excluir usuário no Supabase: ${error.message}`);
+    }
+  }
 }
