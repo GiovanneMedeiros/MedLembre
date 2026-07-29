@@ -20,6 +20,11 @@ export const FAQ_ITEMS = [
       "Sim. Seus dados de saúde e de contato são armazenados com segurança e usados apenas para o funcionamento dos lembretes, nunca compartilhados com terceiros para fins comerciais.",
   },
   {
+    question: "O plano Grátis é para sempre?",
+    answer:
+      "O plano Grátis dá acesso completo por 48 horas, para você testar o MedLembre sem compromisso. Depois desse período, é necessário assinar um dos planos pagos para continuar usando.",
+  },
+  {
     question: "Posso cancelar minha assinatura quando quiser?",
     answer:
       "Sim, o cancelamento pode ser feito a qualquer momento diretamente na sua conta, sem burocracia e sem multa.",

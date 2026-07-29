@@ -75,7 +75,7 @@ export function Pricing() {
                   {plan.monthlyPrice > 0 && <span className="text-sm text-ink-500">/mês</span>}
                 </div>
 
-                {plan.monthlyPrice === 0 && <p className="mt-1 text-xs text-ink-300">Sem custo, sempre.</p>}
+                {plan.monthlyPrice === 0 && <p className="mt-1 text-xs text-ink-300">Grátis por 48 horas.</p>}
 
                 {isAnnual && plan.annualPrice !== null && (
                   <p className="mt-1 text-xs text-ink-300">
