@@ -24,7 +24,10 @@ export function RegisterPage() {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { telefone: "" },
+  });
 
   async function onSubmit(values: RegisterFormValues) {
     setServerError(null);
@@ -87,13 +90,18 @@ export function RegisterPage() {
             />
           </FormField>
 
-          <FormField label="WhatsApp" htmlFor="whatsapp" error={errors.whatsapp?.message} hint="Usaremos este número para enviar seus lembretes.">
+          <FormField
+            label="Telefone (opcional)"
+            htmlFor="telefone"
+            error={errors.telefone?.message}
+            hint="Só usamos como contato, os lembretes chegam por notificação no app."
+          >
             <Controller
               control={control}
-              name="whatsapp"
+              name="telefone"
               render={({ field }) => (
                 <input
-                  id="whatsapp"
+                  id="telefone"
                   type="tel"
                   inputMode="numeric"
                   autoComplete="tel"

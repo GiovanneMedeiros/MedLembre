@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ClipboardList, Clock, MessageCircleHeart } from "lucide-react";
+import { BellRing, ClipboardList, Clock } from "lucide-react";
 
 export interface Step {
   number: string;
@@ -23,8 +23,8 @@ export const STEPS: Step[] = [
   },
   {
     number: "03",
-    title: "Receba o lembrete pelo WhatsApp",
-    description: "No horário certo, você recebe uma mensagem no WhatsApp lembrando de tomar o remédio.",
-    icon: MessageCircleHeart,
+    title: "Instale e receba o lembrete",
+    description: "Adicione o MedLembre à tela do seu celular e receba uma notificação no horário certo.",
+    icon: BellRing,
   },
 ];

@@ -1,7 +1,7 @@
 import { ArrowRight, PlayCircle, ShieldCheck } from "lucide-react";
 import { Container } from "../ui/Container";
 import { Button } from "../ui/Button";
-import { WhatsAppMockup } from "./WhatsAppMockup";
+import { PushNotificationMockup } from "./PushNotificationMockup";
 
 export function Hero() {
   return (
@@ -16,7 +16,7 @@ export function Hero() {
           <div className="text-center lg:text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-600 shadow-soft">
               <ShieldCheck className="h-3.5 w-3.5" />
-              Lembretes direto no WhatsApp
+              Lembretes direto no seu celular
             </span>
 
             <h1 className="mt-6 text-4xl font-bold leading-[1.1] text-ink-900 sm:text-5xl lg:text-[3.25rem]">
@@ -27,8 +27,8 @@ export function Hero() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-lg text-lg text-ink-500 lg:mx-0">
-              Receba lembretes diretamente pelo WhatsApp e cuide da sua rotina de medicamentos com mais
-              tranquilidade.
+              Instale o MedLembre como um app e receba notificações no horário certo para cuidar da sua
+              rotina de medicamentos com mais tranquilidade.
             </p>
 
             <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
@@ -49,7 +49,7 @@ export function Hero() {
           </div>
 
           <div className="animate-fade-up">
-            <WhatsAppMockup />
+            <PushNotificationMockup />
           </div>
         </div>
       </Container>

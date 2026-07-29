@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, BellOff, ChevronRight, KeyRound, Mail, MessageCircle, User } from "lucide-react";
+import { Bell, BellOff, ChevronRight, KeyRound, Mail, Phone, User } from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { PageHeader } from "../../components/app/PageHeader";
@@ -49,7 +49,7 @@ export function ConfiguracoesPage() {
   const infoItems = [
     { label: "Nome", value: nome, icon: User },
     { label: "E-mail", value: user?.email ?? "—", icon: Mail },
-    { label: "WhatsApp", value: whatsapp, icon: MessageCircle },
+    { label: "Telefone", value: whatsapp, icon: Phone },
   ];
 
   return (
@@ -85,7 +85,7 @@ export function ConfiguracoesPage() {
               )}
               <div className="flex-1">
                 <p className="text-sm font-medium text-ink-900">Lembretes neste navegador</p>
-                <p className="text-xs text-ink-500">Gratuito — funciona mesmo sem WhatsApp configurado.</p>
+                <p className="text-xs text-ink-500">Gratuito e funciona direto no navegador.</p>
                 {pushError && <p className="mt-1 text-xs text-red-600">{pushError}</p>}
               </div>
               <Button

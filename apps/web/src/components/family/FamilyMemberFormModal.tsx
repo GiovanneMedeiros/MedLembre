@@ -18,7 +18,7 @@ interface FamilyMemberFormModalProps {
   familyMember?: FamilyMember | null;
 }
 
-const EMPTY_VALUES: FamilyMemberFormValues = { nome: "", whatsapp: "", fotoUrl: "" };
+const EMPTY_VALUES: FamilyMemberFormValues = { nome: "", telefone: "", fotoUrl: "" };
 
 export function FamilyMemberFormModal({ isOpen, onClose, familyMember }: FamilyMemberFormModalProps) {
   const isEditing = Boolean(familyMember);
@@ -45,7 +45,7 @@ export function FamilyMemberFormModal({ isOpen, onClose, familyMember }: FamilyM
     if (familyMember) {
       reset({
         nome: familyMember.nome,
-        whatsapp: formatWhatsAppInput(familyMember.whatsapp),
+        telefone: familyMember.whatsapp ? formatWhatsAppInput(familyMember.whatsapp) : "",
         fotoUrl: familyMember.fotoUrl ?? "",
       });
     } else {
@@ -58,7 +58,7 @@ export function FamilyMemberFormModal({ isOpen, onClose, familyMember }: FamilyM
 
     const input = {
       nome: values.nome,
-      whatsapp: normalizePhoneDigits(values.whatsapp),
+      whatsapp: values.telefone ? normalizePhoneDigits(values.telefone) : undefined,
       fotoUrl: values.fotoUrl || undefined,
     };
 
@@ -84,17 +84,17 @@ export function FamilyMemberFormModal({ isOpen, onClose, familyMember }: FamilyM
         </FormField>
 
         <FormField
-          label="WhatsApp"
-          htmlFor="whatsapp"
-          error={errors.whatsapp?.message}
-          hint="Os lembretes desse familiar serão enviados para este número."
+          label="Telefone (opcional)"
+          htmlFor="telefone"
+          error={errors.telefone?.message}
+          hint="Só um contato — as notificações chegam no seu app, não no telefone dela."
         >
           <Controller
             control={control}
-            name="whatsapp"
+            name="telefone"
             render={({ field }) => (
               <input
-                id="whatsapp"
+                id="telefone"
                 type="tel"
                 inputMode="numeric"
                 autoComplete="tel"

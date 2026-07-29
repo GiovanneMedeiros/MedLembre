@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { isValidBrazilianWhatsApp } from "../phone";
 
+function isEmptyOrValidPhone(value: string) {
+  return value.trim() === "" || isValidBrazilianWhatsApp(value);
+}
+
 export const passwordSchema = z
   .string()
   .min(8, "A senha deve ter no mínimo 8 caracteres")
@@ -16,11 +20,7 @@ export const registerSchema = z
       .min(2, "Informe seu nome completo")
       .max(100, "O nome deve ter no máximo 100 caracteres"),
     email: z.string().trim().min(1, "Informe seu e-mail").email("Digite um e-mail válido"),
-    whatsapp: z
-      .string()
-      .trim()
-      .min(1, "Informe seu WhatsApp")
-      .refine(isValidBrazilianWhatsApp, "Digite um número de WhatsApp válido, com DDD"),
+    telefone: z.string().trim().refine(isEmptyOrValidPhone, "Digite um número de telefone válido, com DDD"),
     senha: passwordSchema,
     confirmarSenha: z.string().min(1, "Confirme sua senha"),
   })

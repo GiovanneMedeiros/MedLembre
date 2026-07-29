@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CalendarCheck, HeartHandshake, History, MessageSquare, Smile, Sparkles } from "lucide-react";
+import { BellRing, CalendarCheck, HeartHandshake, History, Smile, Sparkles } from "lucide-react";
 
 export interface Benefit {
   title: string;
@@ -9,9 +9,9 @@ export interface Benefit {
 
 export const BENEFITS: Benefit[] = [
   {
-    title: "Lembretes pelo WhatsApp",
-    description: "Sem baixar outro aplicativo: os avisos chegam no WhatsApp que você já usa todos os dias.",
-    icon: MessageSquare,
+    title: "Notificações no seu celular",
+    description: "Instale o MedLembre como um app e receba os avisos direto na tela do seu celular.",
+    icon: BellRing,
   },
   {
     title: "Organização dos medicamentos",

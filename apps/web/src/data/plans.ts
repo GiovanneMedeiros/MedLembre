@@ -15,7 +15,7 @@ export const PLANS: Plan[] = [
     description: "Para experimentar o MedLembre sem compromisso.",
     monthlyPrice: 0,
     annualPrice: null,
-    features: ["1 medicamento cadastrado", "Lembretes por WhatsApp", "1 perfil", "Histórico dos últimos 7 dias"],
+    features: ["1 medicamento cadastrado", "Lembretes por notificação push", "1 perfil", "Histórico dos últimos 7 dias"],
   },
   {
     id: "essencial",
@@ -26,7 +26,7 @@ export const PLANS: Plan[] = [
     highlighted: true,
     features: [
       "Até 5 medicamentos",
-      "Lembretes ilimitados por WhatsApp",
+      "Lembretes ilimitados por notificação push",
       "1 perfil",
       "Histórico de 30 dias",
       "Suporte por e-mail",
@@ -40,7 +40,7 @@ export const PLANS: Plan[] = [
     annualPrice: 539,
     features: [
       "Medicamentos ilimitados",
-      "Lembretes ilimitados por WhatsApp",
+      "Lembretes ilimitados por notificação push",
       "Até 5 perfis familiares",
       "Histórico de 90 dias",
       "Suporte prioritário",
@@ -56,7 +56,7 @@ export const PLANS: Plan[] = [
       "Tudo do plano Família",
       "Perfis familiares ilimitados",
       "Histórico completo",
-      "Suporte prioritário via WhatsApp",
+      "Suporte prioritário por e-mail",
     ],
   },
 ];
