@@ -15,7 +15,7 @@ const COLUMNS = [
     title: "Empresa",
     links: [
       { label: "Sobre", href: "#" },
-      { label: "Contato", href: "#" },
+      { label: "Contato", href: "mailto:contatomedlembre@gmail.com" },
       { label: "Privacidade", href: "#" },
       { label: "Termos de uso", href: "#" },
     ],
@@ -32,6 +32,12 @@ export function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
               Lembretes de medicamentos direto no seu celular, para você e para quem você ama.
             </p>
+            <a
+              href="mailto:contatomedlembre@gmail.com"
+              className="mt-4 inline-block text-sm font-medium text-brand-600 hover:text-brand-700"
+            >
+              contatomedlembre@gmail.com
+            </a>
           </div>
 
           {COLUMNS.map((column) => (
