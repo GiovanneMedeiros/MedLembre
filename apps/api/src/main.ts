@@ -1,8 +1,10 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+
+const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
@@ -30,6 +32,11 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3333);
+  const port = process.env.PORT ?? 3333;
+  await app.listen(port);
+  logger.log(`HTTP server ouvindo na porta ${port}`);
 }
-void bootstrap();
+bootstrap().catch((error) => {
+  logger.error('Falha ao inicializar a aplicação:', error);
+  process.exit(1);
+});
