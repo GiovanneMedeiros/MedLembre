@@ -6,9 +6,9 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { BillingPeriod, Plano, SubscriptionStatus } from '@prisma/client';
+import { BillingPeriod, Plano, Subscription, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { PLAN_LIMITS } from './plan-limits';
+import { FREE_TRIAL_HOURS, PLAN_LIMITS } from './plan-limits';
 import {
   PAYMENT_PROVIDER,
   type ParsedWebhookEvent,
@@ -49,7 +49,34 @@ export class SubscriptionsService {
     return plano === Plano.FAMILIA || plano === Plano.PREMIUM;
   }
 
+  /**
+   * O plano Grátis é um teste de FREE_TRIAL_HOURS a partir da criação da
+   * assinatura — depois disso, null significa "não expira" (todo plano pago).
+   */
+  trialExpiresAt(subscription: Pick<Subscription, 'plano' | 'createdAt'>): Date | null {
+    if (subscription.plano !== Plano.GRATIS) return null;
+    return new Date(
+      subscription.createdAt.getTime() + FREE_TRIAL_HOURS * 60 * 60 * 1000,
+    );
+  }
+
+  isTrialExpired(subscription: Pick<Subscription, 'plano' | 'createdAt'>): boolean {
+    const expiresAt = this.trialExpiresAt(subscription);
+    return expiresAt !== null && expiresAt.getTime() <= Date.now();
+  }
+
+  async assertTrialActive(userId: string): Promise<void> {
+    const subscription = await this.getOrCreate(userId);
+    if (this.isTrialExpired(subscription)) {
+      throw new ForbiddenException(
+        `Seu período gratuito de ${FREE_TRIAL_HOURS}h expirou. Assine um plano para continuar usando o MedLembre.`,
+      );
+    }
+  }
+
   async assertCanCreateMedication(userId: string): Promise<void> {
+    await this.assertTrialActive(userId);
+
     const plano = await this.getPlano(userId);
     const limit = PLAN_LIMITS[plano].maxMedications;
     if (limit === null) return;
@@ -63,6 +90,8 @@ export class SubscriptionsService {
   }
 
   async assertCanCreateFamilyMember(userId: string): Promise<void> {
+    await this.assertTrialActive(userId);
+
     const plano = await this.getPlano(userId);
     const limit = PLAN_LIMITS[plano].maxFamilyMembers;
 

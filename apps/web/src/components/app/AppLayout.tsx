@@ -4,9 +4,12 @@ import { LogOut, Menu, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { SidebarNav } from "./SidebarNav";
 import { InstallAppBanner } from "./InstallAppBanner";
+import { TrialBanner } from "./TrialBanner";
+import { TrialExpiredScreen } from "./TrialExpiredScreen";
 import { FamilyScopeSwitcher } from "./FamilyScopeSwitcher";
 import { FamilyScopeProvider } from "../../contexts/FamilyScopeContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSubscription } from "../../hooks/useSubscription";
 import { NAV_ITEMS } from "./navItems";
 
 export function AppLayout() {
@@ -14,6 +17,10 @@ export function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const { data: subscription } = useSubscription();
+
+  const isAssinaturaPage = location.pathname === "/dashboard/assinatura";
+  const trialExpired = Boolean(subscription?.trialExpired) && !isAssinaturaPage;
 
   const nome = (user?.user_metadata?.nome as string | undefined) ?? user?.email ?? "";
   const currentLabel = NAV_ITEMS.find((item) =>
@@ -123,7 +130,10 @@ export function AppLayout() {
 
       <main className="min-w-0 flex-1">
         <InstallAppBanner />
-        <Outlet />
+        {subscription?.plano === "GRATIS" && !subscription.trialExpired && subscription.trialExpiresAt && (
+          <TrialBanner trialExpiresAt={subscription.trialExpiresAt} />
+        )}
+        {trialExpired ? <TrialExpiredScreen /> : <Outlet />}
       </main>
     </div>
     </FamilyScopeProvider>
