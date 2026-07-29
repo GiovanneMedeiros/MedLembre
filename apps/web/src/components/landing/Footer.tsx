@@ -30,7 +30,7 @@ export function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-              Lembretes de medicamentos pelo WhatsApp, para você e para quem você ama.
+              Lembretes de medicamentos direto no seu celular, para você e para quem você ama.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import { MessageCircle, Pencil, Trash2, User } from "lucide-react";
+import { Pencil, Phone, Trash2, User } from "lucide-react";
 import type { FamilyMember } from "../../types/familyMember";
 import { formatWhatsAppInput } from "../../lib/phone";
 
@@ -21,10 +21,12 @@ export function FamilyMemberCard({ familyMember, onEdit, onDelete }: FamilyMembe
 
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-base font-bold text-ink-900">{familyMember.nome}</h3>
-        <div className="mt-0.5 flex items-center gap-1.5 text-sm text-ink-500">
-          <MessageCircle className="h-3.5 w-3.5 text-brand-500" aria-hidden="true" />
-          {formatWhatsAppInput(familyMember.whatsapp)}
-        </div>
+        {familyMember.whatsapp && (
+          <div className="mt-0.5 flex items-center gap-1.5 text-sm text-ink-500">
+            <Phone className="h-3.5 w-3.5 text-brand-500" aria-hidden="true" />
+            {formatWhatsAppInput(familyMember.whatsapp)}
+          </div>
+        )}
       </div>
 
       <div className="flex shrink-0 items-center gap-1">

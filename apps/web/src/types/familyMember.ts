@@ -2,7 +2,7 @@ export interface FamilyMember {
   id: string;
   userId: string;
   nome: string;
-  whatsapp: string;
+  whatsapp: string | null;
   fotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
@@ -10,6 +10,6 @@ export interface FamilyMember {
 
 export interface FamilyMemberInput {
   nome: string;
-  whatsapp: string;
+  whatsapp?: string;
   fotoUrl?: string;
 }

@@ -13,11 +13,11 @@ export class CreateFamilyMemberDto {
   @MaxLength(100, { message: 'O nome deve ter no máximo 100 caracteres' })
   nome: string;
 
-  @IsString()
+  @IsOptional()
   @Matches(/^\d{10,11}$/, {
-    message: 'Informe um WhatsApp válido, com DDD (somente números)',
+    message: 'Informe um telefone válido, com DDD (somente números)',
   })
-  whatsapp: string;
+  whatsapp?: string;
 
   @IsOptional()
   @IsUrl({}, { message: 'URL da foto inválida' })

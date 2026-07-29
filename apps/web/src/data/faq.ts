@@ -1,18 +1,18 @@
 export const FAQ_ITEMS = [
   {
-    question: "Como funciona o lembrete pelo WhatsApp?",
+    question: "Como funciona o lembrete?",
     answer:
-      "No horário que você definir para cada medicamento, o MedLembre envia uma mensagem para o seu WhatsApp lembrando de tomar o remédio. Você não precisa instalar nenhum outro aplicativo.",
+      "No horário que você definir para cada medicamento, o MedLembre envia uma notificação para o seu celular lembrando de tomar o remédio — igual a uma notificação de qualquer outro app.",
   },
   {
     question: "Preciso instalar algum aplicativo para receber os lembretes?",
     answer:
-      "Não. O cadastro dos medicamentos e horários é feito pelo MedLembre, mas os lembretes chegam direto no WhatsApp que você já usa no seu celular.",
+      "É só adicionar o MedLembre à tela inicial do seu celular direto pelo navegador — leva menos de um minuto e não ocupa espaço como um app baixado de loja.",
   },
   {
     question: "Posso cadastrar medicamentos de familiares?",
     answer:
-      "Sim. Nos planos Família e Premium você pode criar perfis para familiares e acompanhar a rotina de medicamentos de cada um deles.",
+      "Sim. Nos planos Família e Premium você pode criar perfis para familiares e acompanhar a rotina de cada um — as notificações chegam para você, que ajuda a lembrar quem você cuida.",
   },
   {
     question: "Meus dados estão seguros?",

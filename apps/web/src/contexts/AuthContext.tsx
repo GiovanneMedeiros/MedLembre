@@ -6,7 +6,7 @@ import { normalizePhoneDigits } from "../lib/phone";
 interface SignUpInput {
   nome: string;
   email: string;
-  whatsapp: string;
+  telefone: string;
   senha: string;
 }
 
@@ -47,14 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  async function signUp({ nome, email, whatsapp, senha }: SignUpInput) {
+  async function signUp({ nome, email, telefone, senha }: SignUpInput) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
       options: {
         data: {
           nome,
-          whatsapp: normalizePhoneDigits(whatsapp),
+          whatsapp: telefone.trim() ? normalizePhoneDigits(telefone) : null,
         },
       },
     });
