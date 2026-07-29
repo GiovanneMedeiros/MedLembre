@@ -11,7 +11,7 @@ import {
 import type { Request } from 'express';
 import { SubscriptionsService } from './subscriptions.service';
 
-const PROVIDER_NAME = 'generic';
+const PROVIDER_NAME = 'cakto';
 
 @Controller('webhooks/payments')
 export class PaymentsWebhookController {
@@ -19,17 +19,20 @@ export class PaymentsWebhookController {
 
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
-  @Post()
+  @Post('cakto')
   @HttpCode(HttpStatus.OK)
-  async receive(@Req() req: RawBodyRequest<Request>) {
+  async receiveCakto(@Req() req: RawBodyRequest<Request>) {
     const rawBody = req.rawBody;
     if (!rawBody) {
       throw new UnauthorizedException('Corpo da requisição ausente.');
     }
 
+    const query = req.query as Record<string, string | string[] | undefined>;
+
     const isValid = this.subscriptionsService.verifyWebhookSignature(
       rawBody,
       req.headers,
+      query,
     );
     if (!isValid) {
       throw new UnauthorizedException('Assinatura do webhook inválida.');
@@ -38,6 +41,7 @@ export class PaymentsWebhookController {
     const event = this.subscriptionsService.parseWebhookEvent(
       rawBody,
       req.headers,
+      query,
     );
     const result = await this.subscriptionsService.processWebhookEvent(
       PROVIDER_NAME,

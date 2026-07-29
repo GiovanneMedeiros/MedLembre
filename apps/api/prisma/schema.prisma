@@ -95,10 +95,20 @@ model Subscription {
   providerSubscriptionId  String?             @unique
   currentPeriodEnd        DateTime?
   cancelAtPeriodEnd       Boolean             @default(false)
+  // E-mail e plano/periodicidade pretendidos no momento em que o checkout
+  // foi gerado. Necessários porque a Cakto (e outros checkouts estáticos
+  // sem API de "criar sessão") não devolve um identificador de usuário no
+  // webhook — o evento é resolvido casando o e-mail do pagador aqui, e o
+  // plano concedido é o que a própria aplicação pretendia, não algo que
+  // o provedor precise reportar de volta.
+  email                   String?
+  pendingPlano            Plano?
+  pendingPeriodicidade    BillingPeriod?
   createdAt               DateTime            @default(now())
   updatedAt               DateTime            @updatedAt
 
   @@index([providerCustomerId])
+  @@index([email])
   @@map("subscriptions")
 }
 

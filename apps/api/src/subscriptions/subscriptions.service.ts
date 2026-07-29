@@ -103,6 +103,16 @@ export class SubscriptionsService {
       );
     }
 
+    // Guarda a intenção (e-mail + plano pretendido) antes de redirecionar
+    // ao checkout. Provedores sem API de sessão dinâmica (ex: Cakto, que
+    // usa links de pagamento estáticos por produto) não têm como devolver
+    // esses dados no webhook — usamos o que a própria aplicação já sabia.
+    await this.getOrCreate(userId);
+    await this.prisma.subscription.update({
+      where: { userId },
+      data: { email, pendingPlano: plano, pendingPeriodicidade: periodicidade },
+    });
+
     return this.paymentProvider.createCheckoutSession({
       userId,
       email,
@@ -140,15 +150,21 @@ export class SubscriptionsService {
   verifyWebhookSignature(
     rawBody: Buffer,
     headers: Record<string, string | string[] | undefined>,
+    query: Record<string, string | string[] | undefined>,
   ): boolean {
-    return this.paymentProvider.verifyWebhookSignature({ rawBody, headers });
+    return this.paymentProvider.verifyWebhookSignature({
+      rawBody,
+      headers,
+      query,
+    });
   }
 
   parseWebhookEvent(
     rawBody: Buffer,
     headers: Record<string, string | string[] | undefined>,
+    query: Record<string, string | string[] | undefined>,
   ): ParsedWebhookEvent {
-    return this.paymentProvider.parseWebhookEvent({ rawBody, headers });
+    return this.paymentProvider.parseWebhookEvent({ rawBody, headers, query });
   }
 
   /**
@@ -212,7 +228,7 @@ export class SubscriptionsService {
     userId: string,
     event: ParsedWebhookEvent,
   ) {
-    await this.getOrCreate(userId);
+    const subscription = await this.getOrCreate(userId);
 
     switch (event.type) {
       case 'PAGAMENTO_CONFIRMADO':
@@ -223,8 +239,9 @@ export class SubscriptionsService {
           data: {
             status: SubscriptionStatus.ATIVA,
             cancelAtPeriodEnd: false,
-            plano: event.plano ?? undefined,
-            periodicidade: event.periodicidade ?? undefined,
+            plano: event.plano ?? subscription.pendingPlano ?? undefined,
+            periodicidade:
+              event.periodicidade ?? subscription.pendingPeriodicidade ?? undefined,
             provider,
             providerCustomerId: event.providerCustomerId ?? undefined,
             providerSubscriptionId: event.providerSubscriptionId ?? undefined,
@@ -274,6 +291,14 @@ export class SubscriptionsService {
     if (event.providerCustomerId) {
       const existing = await this.prisma.subscription.findFirst({
         where: { providerCustomerId: event.providerCustomerId },
+      });
+      if (existing) return existing.userId;
+    }
+
+    if (event.payerEmail) {
+      const existing = await this.prisma.subscription.findFirst({
+        where: { email: event.payerEmail },
+        orderBy: { updatedAt: 'desc' },
       });
       if (existing) return existing.userId;
     }
