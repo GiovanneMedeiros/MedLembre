@@ -6,7 +6,7 @@ import { PageHeader } from "../../components/app/PageHeader";
 import { TimelineRow } from "../../components/medications/TimelineRow";
 import { useHistorico } from "../../hooks/useHistorico";
 import { useMarkDose, useUnmarkDose } from "../../hooks/useMedications";
-import { formatDateBR, todayLocalDateString, weekdayLabel } from "../../lib/date";
+import { formatDateBR, toLocalDateString, todayLocalDateString, weekdayLabel } from "../../lib/date";
 import type { TimelineItem } from "../../types/dashboard";
 
 function dateLabel(dateOnly: string): string {
@@ -15,7 +15,7 @@ function dateLabel(dateOnly: string): string {
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayOnly = yesterday.toISOString().slice(0, 10);
+  const yesterdayOnly = toLocalDateString(yesterday);
   if (dateOnly === yesterdayOnly) return "Ontem";
 
   const dayOfWeek = new Date(`${dateOnly}T00:00:00`).getDay();

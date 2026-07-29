@@ -1,9 +1,15 @@
-export function todayLocalDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+// Sempre usa os getters locais (getFullYear/getMonth/getDate), nunca
+// toISOString() — em timezones atrás de UTC (ex: Brasil, UTC-3),
+// toISOString() adianta a data à noite, criando erro de "um dia a mais".
+export function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function todayLocalDateString(): string {
+  return toLocalDateString(new Date());
 }
 
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
