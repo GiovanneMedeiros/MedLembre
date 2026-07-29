@@ -30,6 +30,12 @@ export interface ParsedWebhookEvent {
   userId?: string;
   providerCustomerId?: string;
   providerSubscriptionId?: string;
+  /**
+   * E-mail do pagador informado no evento. Usado para resolver o usuário
+   * quando o provedor não devolve um identificador nosso (ex: Cakto, cujo
+   * checkout é um link estático sem sessão dinâmica) — ver Subscription.email.
+   */
+  payerEmail?: string;
   plano?: Plano;
   periodicidade?: BillingPeriod;
   currentPeriodEnd?: Date;
@@ -39,6 +45,7 @@ export interface ParsedWebhookEvent {
 export interface WebhookRequestData {
   rawBody: Buffer;
   headers: Record<string, string | string[] | undefined>;
+  query: Record<string, string | string[] | undefined>;
 }
 
 /**
