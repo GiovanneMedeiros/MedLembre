@@ -30,9 +30,17 @@ export class RemindersScheduler {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleDueReminders() {
-    const now = new Date();
-    await this.sendDueNow(now);
-    await this.resendSnoozed(now);
+    try {
+      const now = new Date();
+      await this.sendDueNow(now);
+      await this.resendSnoozed(now);
+    } catch (error) {
+      // Uma exceção não tratada aqui derruba o processo inteiro (Node
+      // encerra em promise rejections não tratadas), tirando a API do ar
+      // até o próximo restart — por isso o job nunca pode propagar.
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(`Falha ao processar lembretes agendados: ${message}`);
+    }
   }
 
   private async sendDueNow(now: Date) {
