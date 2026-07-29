@@ -91,4 +91,13 @@ export class MedicationsController {
   ) {
     await this.medicationsService.unmarkDose(user.id, id, scheduledFor);
   }
+
+  @Post(':id/doses/snooze')
+  snoozeDose(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: MarkDoseDto,
+  ) {
+    return this.medicationsService.snoozeDose(user.id, id, dto.scheduledFor);
+  }
 }

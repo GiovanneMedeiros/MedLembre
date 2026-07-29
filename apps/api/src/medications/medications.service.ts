@@ -3,7 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MedicationStatus } from '@prisma/client';
+import { MedicationStatus, ReminderStatus } from '@prisma/client';
+import { NUDGE_INTERVAL_MINUTES } from '../reminders/reminders.scheduler';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { CreateMedicationDto } from './dto/create-medication.dto';
@@ -152,5 +153,39 @@ export class MedicationsService {
         scheduledFor: new Date(scheduledFor),
       },
     });
+  }
+
+  /**
+   * "+5min": adia o próximo lembrete dessa dose. O agendador (reminders
+   * scheduler) já reinsiste sozinho a cada NUDGE_INTERVAL_MINUTES enquanto a
+   * dose seguir sem resposta — este endpoint só permite o usuário pedir isso
+   * manualmente pelo dashboard, com o mesmo intervalo.
+   */
+  async snoozeDose(userId: string, medicationId: string, scheduledFor: string) {
+    const medication = await this.findOneOrThrow(userId, medicationId);
+    const scheduledForDate = new Date(scheduledFor);
+    const snoozedUntil = new Date(
+      Date.now() + NUDGE_INTERVAL_MINUTES * 60 * 1000,
+    );
+
+    await this.prisma.reminderLog.upsert({
+      where: {
+        medicationId_scheduledFor: {
+          medicationId: medication.id,
+          scheduledFor: scheduledForDate,
+        },
+      },
+      create: {
+        userId,
+        medicationId: medication.id,
+        familyMemberId: medication.familyMemberId,
+        scheduledFor: scheduledForDate,
+        status: ReminderStatus.SIMULADO,
+        snoozedUntil,
+      },
+      update: { snoozedUntil },
+    });
+
+    return { snoozedUntil };
   }
 }

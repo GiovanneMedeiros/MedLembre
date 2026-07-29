@@ -81,3 +81,10 @@ export function useUnmarkDose() {
     onSuccess: invalidate,
   });
 }
+
+export function useSnoozeDose() {
+  return useMutation({
+    mutationFn: ({ medicationId, scheduledFor }: { medicationId: string; scheduledFor: string }) =>
+      api.post<{ snoozedUntil: string }>(`/medications/${medicationId}/doses/snooze`, { scheduledFor }),
+  });
+}
