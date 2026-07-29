@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import type { FamilyMember, Medication } from '@prisma/client';
+import { ReminderStatus, type FamilyMember, type Medication } from '@prisma/client';
 import {
   combineDateAndTime,
   currentTimeString,
@@ -15,6 +15,13 @@ import { SupabaseAdminService } from '../supabase-admin/supabase-admin.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
 type MedicationWithFamily = Medication & { familyMember: FamilyMember | null };
+
+// A cada quantos minutos o app insiste no lembrete enquanto a dose segue
+// sem resposta (nem "Tomei" nem "+5min"), e por quantas horas depois do
+// horário previsto ele desiste de insistir (evita cutucar a pessoa a
+// madrugada inteira por uma dose que ela não vai mais tomar).
+export const NUDGE_INTERVAL_MINUTES = 5;
+const NUDGE_GIVE_UP_HOURS = 4;
 
 @Injectable()
 export class RemindersScheduler {
@@ -94,6 +101,15 @@ export class RemindersScheduler {
     });
 
     for (const log of dueSnoozed) {
+      const hoursLate = (now.getTime() - log.scheduledFor.getTime()) / 3_600_000;
+      if (hoursLate > NUDGE_GIVE_UP_HOURS) {
+        await this.prisma.reminderLog.update({
+          where: { id: log.id },
+          data: { snoozedUntil: null },
+        });
+        continue;
+      }
+
       const alreadyTaken = await this.prisma.doseRecord.findUnique({
         where: {
           medicationId_scheduledFor: {
@@ -139,33 +155,62 @@ export class RemindersScheduler {
       medication.familyMember?.whatsapp ??
       (await this.supabaseAdmin.getOwnerContact(medication.userId)).whatsapp;
 
-    if (!phoneDigits) {
+    if (phoneDigits) {
+      const baseInput = {
+        userId: medication.userId,
+        familyMemberId: medication.familyMemberId,
+        medicationId: medication.id,
+        medicationNome: medication.nome,
+        horario,
+        scheduledFor,
+      };
+
+      // Preferimos o WhatsApp oficial quando configurado; caso contrário,
+      // caímos para SMS (Twilio) se disponível. Sem nenhum dos dois, o envio
+      // pelo WhatsApp entra em modo simulado (apenas registra no ReminderLog).
+      if (this.whatsapp.isConfigured() || !this.sms.isConfigured()) {
+        await this.whatsapp.sendMedicationReminder({
+          ...baseInput,
+          to: toWhatsAppNumber(phoneDigits),
+        });
+      } else {
+        await this.sms.sendMedicationReminder({ ...baseInput, to: phoneDigits });
+      }
+    } else {
       this.logger.warn(
         `Sem número de contato para lembrete de "${medication.nome}" (medicamento ${medication.id}).`,
       );
-      return;
     }
 
-    const baseInput = {
-      userId: medication.userId,
-      familyMemberId: medication.familyMemberId,
-      medicationId: medication.id,
-      medicationNome: medication.nome,
-      horario,
-      scheduledFor,
-    };
+    // Agenda a próxima insistência independente do canal usado acima — sem
+    // isso, quem só recebe push (sem telefone cadastrado) nunca seria
+    // lembrado de novo, já que o upsert do WhatsApp/SMS zera snoozedUntil
+    // (esperando uma resposta explícita) e não roda de jeito nenhum quando
+    // não há telefone.
+    await this.scheduleNudge(medication, scheduledFor);
+  }
 
-    // Preferimos o WhatsApp oficial quando configurado; caso contrário, caímos
-    // para SMS (Twilio) se disponível. Sem nenhum dos dois, o envio pelo
-    // WhatsApp entra em modo simulado (apenas registra no ReminderLog).
-    if (this.whatsapp.isConfigured() || !this.sms.isConfigured()) {
-      await this.whatsapp.sendMedicationReminder({
-        ...baseInput,
-        to: toWhatsAppNumber(phoneDigits),
-      });
-      return;
-    }
+  private async scheduleNudge(medication: MedicationWithFamily, scheduledFor: Date) {
+    const snoozedUntil = new Date(
+      Date.now() + NUDGE_INTERVAL_MINUTES * 60 * 1000,
+    );
 
-    await this.sms.sendMedicationReminder({ ...baseInput, to: phoneDigits });
+    await this.prisma.reminderLog.upsert({
+      where: {
+        medicationId_scheduledFor: {
+          medicationId: medication.id,
+          scheduledFor,
+        },
+      },
+      create: {
+        userId: medication.userId,
+        medicationId: medication.id,
+        familyMemberId: medication.familyMemberId,
+        scheduledFor,
+        status: ReminderStatus.SIMULADO,
+        snoozedUntil,
+      },
+      update: { snoozedUntil },
+    });
   }
 }

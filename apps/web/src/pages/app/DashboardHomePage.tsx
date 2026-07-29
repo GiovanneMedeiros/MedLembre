@@ -6,7 +6,7 @@ import { StatCard } from "../../components/app/StatCard";
 import { TimelineRow } from "../../components/medications/TimelineRow";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardSummary } from "../../hooks/useDashboardSummary";
-import { useMarkDose, useUnmarkDose } from "../../hooks/useMedications";
+import { useMarkDose, useSnoozeDose, useUnmarkDose } from "../../hooks/useMedications";
 import { formatTimeBR } from "../../lib/date";
 
 export function DashboardHomePage() {
@@ -15,6 +15,7 @@ export function DashboardHomePage() {
   const { data, isLoading, isError } = useDashboardSummary();
   const markDose = useMarkDose();
   const unmarkDose = useUnmarkDose();
+  const snoozeDose = useSnoozeDose();
 
   const nome = (user?.user_metadata?.nome as string | undefined)?.split(" ")[0] ?? "";
 
@@ -94,6 +95,14 @@ export function DashboardHomePage() {
                       item={item}
                       isLoading={isTogglingKey(item.medicationId, item.scheduledFor)}
                       onToggle={() => toggleDose(item.medicationId, item.scheduledFor, item.status === "tomado")}
+                      onSnooze={() =>
+                        snoozeDose.mutateAsync({ medicationId: item.medicationId, scheduledFor: item.scheduledFor })
+                      }
+                      isSnoozing={
+                        snoozeDose.isPending &&
+                        snoozeDose.variables?.medicationId === item.medicationId &&
+                        snoozeDose.variables?.scheduledFor === item.scheduledFor
+                      }
                     />
                   ))}
                 </ul>
