@@ -1,10 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, BellOff, ChevronRight, KeyRound, Mail, Phone, User } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  ChevronRight,
+  Download,
+  KeyRound,
+  Mail,
+  Phone,
+  Trash2,
+  User,
+} from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PageHeader } from "../../components/app/PageHeader";
+import { inputClassName } from "../../components/auth/inputClassName";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSubscription } from "../../hooks/useSubscription";
+import { useHistorico } from "../../hooks/useHistorico";
+import { api, ApiError } from "../../lib/api";
+import { formatWhatsAppInput } from "../../lib/phone";
+import { formatDateBR } from "../../lib/date";
 import {
   disablePushNotifications,
   enablePushNotifications,
@@ -12,17 +29,32 @@ import {
   isPushSupported,
 } from "../../lib/push";
 
+const SUPPORT_EMAIL = "contatomedlembre@gmail.com";
+const PRIORITY_SUPPORT_PLANS = ["FAMILIA", "PREMIUM"];
+
 export function ConfiguracoesPage() {
-  const { user } = useAuth();
+  const { user, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const { data: subscription } = useSubscription();
+  const { data: historico } = useHistorico();
 
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
 
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [nomeInput, setNomeInput] = useState("");
+  const [telefoneInput, setTelefoneInput] = useState("");
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     if (!isPushSupported()) return;
-    getExistingSubscription().then((subscription) => setPushEnabled(Boolean(subscription)));
+    getExistingSubscription().then((sub) => setPushEnabled(Boolean(sub)));
   }, []);
 
   async function handleTogglePush() {
@@ -43,14 +75,76 @@ export function ConfiguracoesPage() {
     }
   }
 
-  const nome = (user?.user_metadata?.nome as string | undefined) ?? "—";
-  const whatsapp = (user?.user_metadata?.whatsapp as string | undefined) ?? "—";
+  const nome = (user?.user_metadata?.nome as string | undefined) ?? "";
+  const whatsapp = (user?.user_metadata?.whatsapp as string | undefined) ?? "";
+
+  function startEditingProfile() {
+    setProfileError(null);
+    setNomeInput(nome);
+    setTelefoneInput(whatsapp ? formatWhatsAppInput(whatsapp) : "");
+    setIsEditingProfile(true);
+  }
+
+  async function handleSaveProfile() {
+    if (nomeInput.trim().length < 2) {
+      setProfileError("O nome deve ter no mínimo 2 caracteres.");
+      return;
+    }
+    setProfileError(null);
+    setProfileSaving(true);
+    try {
+      await updateProfile({ nome: nomeInput.trim(), telefone: telefoneInput });
+      setIsEditingProfile(false);
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : "Não foi possível salvar seus dados.");
+    } finally {
+      setProfileSaving(false);
+    }
+  }
 
   const infoItems = [
-    { label: "Nome", value: nome, icon: User },
+    { label: "Nome", value: nome || "—", icon: User },
     { label: "E-mail", value: user?.email ?? "—", icon: Mail },
-    { label: "Telefone", value: whatsapp, icon: Phone },
+    { label: "Telefone", value: whatsapp ? formatWhatsAppInput(whatsapp) : "—", icon: Phone },
   ];
+
+  const hasPrioritySupport = subscription ? PRIORITY_SUPPORT_PLANS.includes(subscription.plano) : false;
+  const canExportHistory = subscription ? subscription.plano !== "GRATIS" : false;
+
+  function handleExportHistory() {
+    if (!historico) return;
+
+    const header = "Medicamento;Dosagem;Horário;Data;Status\n";
+    const rows = historico.items
+      .map((item) => {
+        const [dateOnly] = item.scheduledFor.split("T");
+        const statusLabel =
+          item.status === "tomado" ? "Tomado" : item.status === "perdido" ? "Perdido" : item.status;
+        return [item.nome, item.dosagem, item.horario, formatDateBR(dateOnly), statusLabel].join(";");
+      })
+      .join("\n");
+
+    const blob = new Blob([`﻿${header}${rows}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "historico-medlembre.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError(null);
+    setIsDeleting(true);
+    try {
+      await api.delete("/auth/me");
+      await signOut();
+      navigate("/", { replace: true });
+    } catch (error) {
+      setDeleteError(error instanceof ApiError ? error.message : "Não foi possível excluir sua conta agora.");
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <div className="pb-16">
@@ -58,18 +152,65 @@ export function ConfiguracoesPage() {
 
       <Container className="max-w-2xl pt-6 sm:pt-8">
         <div className="rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
-          <div className="border-b border-ink-900/[0.06] px-5 py-4">
+          <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">
             <h2 className="text-sm font-bold text-ink-900">Meus dados</h2>
+            {!isEditingProfile && (
+              <button
+                type="button"
+                onClick={startEditingProfile}
+                className="text-xs font-semibold text-brand-600 hover:text-brand-700"
+              >
+                Editar
+              </button>
+            )}
           </div>
-          <div className="divide-y divide-ink-900/[0.06]">
-            {infoItems.map((item) => (
-              <div key={item.label} className="flex items-center gap-3 px-5 py-4">
-                <item.icon className="h-4 w-4 text-brand-500" aria-hidden="true" />
-                <span className="w-24 shrink-0 text-sm text-ink-500">{item.label}</span>
-                <span className="truncate text-sm font-medium text-ink-900">{item.value}</span>
+
+          {isEditingProfile ? (
+            <div className="flex flex-col gap-4 px-5 py-4">
+              {profileError && <p className="text-sm text-red-600">{profileError}</p>}
+              <div>
+                <label htmlFor="config-nome" className="mb-1.5 block text-sm font-medium text-ink-700">
+                  Nome completo
+                </label>
+                <input
+                  id="config-nome"
+                  className={inputClassName}
+                  value={nomeInput}
+                  onChange={(e) => setNomeInput(e.target.value)}
+                />
               </div>
-            ))}
-          </div>
+              <div>
+                <label htmlFor="config-telefone" className="mb-1.5 block text-sm font-medium text-ink-700">
+                  Telefone (opcional)
+                </label>
+                <input
+                  id="config-telefone"
+                  className={inputClassName}
+                  value={telefoneInput}
+                  onChange={(e) => setTelefoneInput(formatWhatsAppInput(e.target.value))}
+                  placeholder="(11) 91234-5678"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="secondary" size="md" onClick={() => setIsEditingProfile(false)} disabled={profileSaving}>
+                  Cancelar
+                </Button>
+                <Button variant="primary" size="md" onClick={handleSaveProfile} disabled={profileSaving}>
+                  {profileSaving ? "Salvando..." : "Salvar"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-ink-900/[0.06]">
+              {infoItems.map((item) => (
+                <div key={item.label} className="flex items-center gap-3 px-5 py-4">
+                  <item.icon className="h-4 w-4 text-brand-500" aria-hidden="true" />
+                  <span className="w-24 shrink-0 text-sm text-ink-500">{item.label}</span>
+                  <span className="truncate text-sm font-medium text-ink-900">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {isPushSupported() && (
@@ -103,6 +244,57 @@ export function ConfiguracoesPage() {
         )}
 
         <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+          <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">
+            <h2 className="text-sm font-bold text-ink-900">Exportar histórico</h2>
+            {!canExportHistory && (
+              <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-600">
+                Planos pagos
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 px-5 py-4">
+            <Download className="h-4 w-4 text-brand-500" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink-900">Baixar histórico em CSV</p>
+              <p className="text-xs text-ink-500">
+                {canExportHistory
+                  ? "Exporte suas doses tomadas e perdidas para levar ao médico ou guardar."
+                  : "Disponível a partir do plano Essencial."}
+              </p>
+            </div>
+            {canExportHistory ? (
+              <Button size="md" className="h-9 shrink-0 px-4 text-xs" onClick={handleExportHistory}>
+                Baixar
+              </Button>
+            ) : (
+              <Button as="link" to="/dashboard/assinatura" variant="secondary" size="md" className="h-9 shrink-0 px-4 text-xs">
+                Fazer upgrade
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+          <div className="border-b border-ink-900/[0.06] px-5 py-4">
+            <h2 className="text-sm font-bold text-ink-900">Suporte</h2>
+          </div>
+          <div className="px-5 py-4">
+            <p className="text-sm text-ink-900">
+              Precisa de ajuda? Fale com a gente em{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-brand-600 hover:text-brand-700">
+                {SUPPORT_EMAIL}
+              </a>
+              .
+            </p>
+            {hasPrioritySupport && (
+              <p className="mt-1.5 text-xs font-semibold text-brand-600">
+                Seu plano tem suporte prioritário — respondemos com preferência.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
           <button
             type="button"
             onClick={() => navigate("/dashboard/alterar-senha")}
@@ -113,7 +305,42 @@ export function ConfiguracoesPage() {
             <ChevronRight className="h-4 w-4 text-ink-300" aria-hidden="true" />
           </button>
         </div>
+
+        <div className="mt-6 rounded-2xl border border-red-200 bg-white shadow-soft">
+          <div className="border-b border-red-100 px-5 py-4">
+            <h2 className="text-sm font-bold text-red-700">Zona de risco</h2>
+          </div>
+          <div className="flex items-center gap-3 px-5 py-4">
+            <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink-900">Excluir minha conta</p>
+              <p className="text-xs text-ink-500">
+                Remove permanentemente seus dados, medicamentos e histórico. Não pode ser desfeito.
+              </p>
+              {deleteError && <p className="mt-1 text-xs text-red-600">{deleteError}</p>}
+            </div>
+            <Button
+              variant="secondary"
+              size="md"
+              className="h-9 shrink-0 border-red-200 px-4 text-xs text-red-700 hover:border-red-300"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              Excluir conta
+            </Button>
+          </div>
+        </div>
       </Container>
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Excluir sua conta"
+        description="Isso remove permanentemente seus medicamentos, histórico, familiares e assinatura. Essa ação não pode ser desfeita."
+        confirmLabel="Excluir conta"
+        loadingLabel="Excluindo..."
+        isLoading={isDeleting}
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </div>
   );
 }
