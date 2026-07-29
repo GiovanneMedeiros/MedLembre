@@ -12,6 +12,7 @@ import { medicationSchema, type MedicationFormValues } from "../../lib/validatio
 import { useCreateMedication, useUpdateMedication } from "../../hooks/useMedications";
 import type { Medication } from "../../types/medication";
 import { ApiError } from "../../lib/api";
+import { todayLocalDateString } from "../../lib/date";
 
 interface MedicationFormModalProps {
   isOpen: boolean;
@@ -24,15 +25,17 @@ function toDateInputValue(iso: string | null): string {
   return iso.slice(0, 10);
 }
 
-const EMPTY_VALUES: MedicationFormValues = {
-  nome: "",
-  dosagem: "",
-  observacao: "",
-  horarios: [],
-  diasSemana: [],
-  dataInicio: new Date().toISOString().slice(0, 10),
-  dataFim: "",
-};
+function getEmptyValues(): MedicationFormValues {
+  return {
+    nome: "",
+    dosagem: "",
+    observacao: "",
+    horarios: [],
+    diasSemana: [],
+    dataInicio: todayLocalDateString(),
+    dataFim: "",
+  };
+}
 
 export function MedicationFormModal({ isOpen, onClose, medication }: MedicationFormModalProps) {
   const isEditing = Boolean(medication);
@@ -48,7 +51,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
     formState: { errors, isSubmitting },
   } = useForm<MedicationFormValues>({
     resolver: zodResolver(medicationSchema),
-    defaultValues: EMPTY_VALUES,
+    defaultValues: getEmptyValues(),
   });
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
         dataFim: toDateInputValue(medication.dataFim),
       });
     } else {
-      reset(EMPTY_VALUES);
+      reset(getEmptyValues());
     }
   }, [isOpen, medication, reset]);
 
