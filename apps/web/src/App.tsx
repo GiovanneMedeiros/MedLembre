@@ -1,6 +1,8 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
+import { trackPageView } from "./lib/fbPixel";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/routing/ProtectedRoute";
 import { GuestOnlyRoute } from "./components/routing/GuestOnlyRoute";
@@ -27,11 +29,30 @@ const queryClient = new QueryClient({
   },
 });
 
+// O index.html já dispara o primeiro PageView no carregamento inicial —
+// esse componente cobre as trocas de rota seguintes, já que é uma SPA
+// (o script do Pixel só roda uma vez por carregamento de página real).
+function PixelRouteTracker() {
+  const location = useLocation();
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    trackPageView();
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <PixelRouteTracker />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
