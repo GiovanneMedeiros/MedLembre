@@ -8,6 +8,7 @@ import { SubmitButton } from "../auth/SubmitButton";
 import { inputClassName } from "../auth/inputClassName";
 import { TimeListInput } from "./TimeListInput";
 import { WeekdayToggle } from "./WeekdayToggle";
+import { ColorPicker } from "./ColorPicker";
 import { medicationSchema, type MedicationFormValues } from "../../lib/validation/medication";
 import { useCreateMedication, useUpdateMedication } from "../../hooks/useMedications";
 import type { Medication } from "../../types/medication";
@@ -30,6 +31,7 @@ function getEmptyValues(): MedicationFormValues {
     nome: "",
     dosagem: "",
     observacao: "",
+    cor: "brand",
     horarios: [],
     diasSemana: [],
     dataInicio: todayLocalDateString(),
@@ -64,6 +66,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
         nome: medication.nome,
         dosagem: medication.dosagem,
         observacao: medication.observacao ?? "",
+        cor: medication.cor,
         horarios: medication.horarios,
         diasSemana: medication.diasSemana,
         dataInicio: toDateInputValue(medication.dataInicio),
@@ -81,6 +84,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
       nome: values.nome,
       dosagem: values.dosagem,
       observacao: values.observacao || undefined,
+      cor: values.cor,
       horarios: values.horarios,
       diasSemana: values.diasSemana,
       dataInicio: values.dataInicio,
@@ -131,6 +135,14 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
             className={`${inputClassName} h-auto resize-none py-2.5`}
             placeholder="Ex: Tomar em jejum"
             {...register("observacao")}
+          />
+        </FormField>
+
+        <FormField label="Cor de identificação" htmlFor="cor" error={errors.cor?.message}>
+          <Controller
+            control={control}
+            name="cor"
+            render={({ field }) => <ColorPicker value={field.value} onChange={field.onChange} />}
           />
         </FormField>
 

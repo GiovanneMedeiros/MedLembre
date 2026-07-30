@@ -3,6 +3,7 @@ import {
   ArrayUnique,
   IsArray,
   IsDateString,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -13,6 +14,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { MEDICATION_COLORS } from '../medication-colors';
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -35,6 +37,10 @@ export class CreateMedicationDto {
   @IsString()
   @MaxLength(500, { message: 'A observação deve ter no máximo 500 caracteres' })
   observacao?: string;
+
+  @IsOptional()
+  @IsIn(MEDICATION_COLORS, { message: 'Cor inválida' })
+  cor?: string;
 
   @IsArray({ message: 'Informe ao menos um horário' })
   @ArrayMinSize(1, { message: 'Informe ao menos um horário' })

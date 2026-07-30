@@ -82,6 +82,7 @@ export class DashboardService {
           medicationId: medication.id,
           nome: medication.nome,
           dosagem: medication.dosagem,
+          cor: medication.cor,
           horario,
           scheduledFor: scheduledFor.toISOString(),
           status,
@@ -119,13 +120,76 @@ export class DashboardService {
       ['pendente', 'proximo', 'atrasado'].includes(item.status),
     ).length;
 
+    const adesaoSemanal = await this.computeWeeklyAdherence(
+      userId,
+      familyMemberId ?? null,
+      today,
+      now,
+    );
+
     return {
       medicamentosCadastrados: totalCount,
       medicamentosTomadosHoje,
       lembretesPendentesHoje,
       proximoMedicamento,
       timelineHoje,
+      adesaoSemanal,
     };
+  }
+
+  private async computeWeeklyAdherence(
+    userId: string,
+    familyMemberId: string | null,
+    todayOnly: string,
+    now: Date,
+  ): Promise<number | null> {
+    const medications = await this.prisma.medication.findMany({
+      where: { userId, familyMemberId, status: 'ATIVO' },
+    });
+    if (medications.length === 0) return null;
+
+    const startDate = combineDateAndTime(todayOnly, '00:00');
+    startDate.setDate(startDate.getDate() - 6);
+
+    const doseRecords = await this.prisma.doseRecord.findMany({
+      where: {
+        userId,
+        medicationId: { in: medications.map((m) => m.id) },
+        scheduledFor: { gte: startDate },
+      },
+    });
+    const takenSet = new Set(
+      doseRecords.map((d) => d.scheduledFor.toISOString()),
+    );
+
+    let totalScheduled = 0;
+    let totalTaken = 0;
+
+    for (let i = 0; i < 7; i += 1) {
+      const cursor = new Date(startDate);
+      cursor.setDate(cursor.getDate() + i);
+      const dateOnly = toDateOnlyString(cursor);
+      const dayOfWeek = cursor.getDay();
+
+      const relevant = medications.filter(
+        (m) =>
+          m.diasSemana.includes(dayOfWeek) &&
+          isWithinRange(dateOnly, m.dataInicio, m.dataFim),
+      );
+
+      for (const medication of relevant) {
+        for (const horario of medication.horarios) {
+          const scheduledFor = combineDateAndTime(dateOnly, horario);
+          if (scheduledFor > now) continue;
+
+          totalScheduled += 1;
+          if (takenSet.has(scheduledFor.toISOString())) totalTaken += 1;
+        }
+      }
+    }
+
+    if (totalScheduled === 0) return null;
+    return Math.round((totalTaken / totalScheduled) * 100);
   }
 
   private async findNextUpcoming(
@@ -157,6 +221,7 @@ export class DashboardService {
             medicationId: m.id,
             nome: m.nome,
             dosagem: m.dosagem,
+            cor: m.cor,
             horario,
             scheduledFor: combineDateAndTime(dateOnly, horario).toISOString(),
             status: 'pendente' as DoseStatus,
@@ -241,6 +306,7 @@ export class DashboardService {
             medicationId: medication.id,
             nome: medication.nome,
             dosagem: medication.dosagem,
+            cor: medication.cor,
             horario,
             scheduledFor: scheduledFor.toISOString(),
             status,

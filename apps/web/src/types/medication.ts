@@ -7,6 +7,7 @@ export interface Medication {
   nome: string;
   dosagem: string;
   observacao: string | null;
+  cor: string;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;
@@ -21,6 +22,7 @@ export interface MedicationInput {
   nome: string;
   dosagem: string;
   observacao?: string;
+  cor?: string;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;

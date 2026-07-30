@@ -4,6 +4,7 @@ export interface TimelineItem {
   medicationId: string;
   nome: string;
   dosagem: string;
+  cor: string;
   horario: string;
   scheduledFor: string;
   status: DoseStatus;
@@ -15,6 +16,7 @@ export interface DashboardSummary {
   lembretesPendentesHoje: number;
   proximoMedicamento: TimelineItem | null;
   timelineHoje: TimelineItem[];
+  adesaoSemanal: number | null;
 }
 
 export interface HistoricoResult {

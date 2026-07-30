@@ -47,6 +47,12 @@
     scroll-behavior: smooth;
   }
 
+  /* Acessibilidade: aumenta a fonte em todo o app (rem-based) quando
+     ativado em Configurações — pensado para usuários idosos. */
+  html.text-scale-lg {
+    font-size: 118%;
+  }
+
   body {
     margin: 0;
     background: var(--color-cream);
