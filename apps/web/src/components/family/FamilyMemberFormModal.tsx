@@ -7,6 +7,7 @@ import { FormAlert } from "../auth/FormAlert";
 import { SubmitButton } from "../auth/SubmitButton";
 import { inputClassName } from "../auth/inputClassName";
 import { familyMemberSchema, type FamilyMemberFormValues } from "../../lib/validation/familyMember";
+import { PhotoUpload } from "./PhotoUpload";
 import { formatWhatsAppInput, normalizePhoneDigits } from "../../lib/phone";
 import { useCreateFamilyMember, useUpdateFamilyMember } from "../../hooks/useFamilyMembers";
 import type { FamilyMember } from "../../types/familyMember";
@@ -109,12 +110,10 @@ export function FamilyMemberFormModal({ isOpen, onClose, familyMember }: FamilyM
         </FormField>
 
         <FormField label="Foto (opcional)" htmlFor="fotoUrl" error={errors.fotoUrl?.message}>
-          <input
-            id="fotoUrl"
-            type="url"
-            className={inputClassName}
-            placeholder="https://..."
-            {...register("fotoUrl")}
+          <Controller
+            control={control}
+            name="fotoUrl"
+            render={({ field }) => <PhotoUpload value={field.value ?? ""} onChange={field.onChange} />}
           />
         </FormField>
 

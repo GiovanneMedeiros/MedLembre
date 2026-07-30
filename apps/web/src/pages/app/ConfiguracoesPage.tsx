@@ -9,6 +9,7 @@ import {
   Mail,
   Phone,
   Trash2,
+  Type,
   User,
 } from "lucide-react";
 import { Container } from "../../components/ui/Container";
@@ -28,6 +29,7 @@ import {
   getExistingSubscription,
   isPushSupported,
 } from "../../lib/push";
+import { isLargeTextEnabled, setLargeText } from "../../lib/fontScale";
 
 const SUPPORT_EMAIL = "contatomedlembre@gmail.com";
 const PRIORITY_SUPPORT_PLANS = ["FAMILIA", "PREMIUM"];
@@ -51,6 +53,17 @@ export function ConfiguracoesPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [largeText, setLargeTextState] = useState(false);
+  useEffect(() => {
+    setLargeTextState(isLargeTextEnabled());
+  }, []);
+
+  function handleToggleLargeText() {
+    const next = !largeText;
+    setLargeText(next);
+    setLargeTextState(next);
+  }
 
   useEffect(() => {
     if (!isPushSupported()) return;
@@ -242,6 +255,28 @@ export function ConfiguracoesPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+          <div className="border-b border-ink-900/[0.06] px-5 py-4">
+            <h2 className="text-sm font-bold text-ink-900">Acessibilidade</h2>
+          </div>
+          <div className="flex items-center gap-3 px-5 py-4">
+            <Type className="h-4 w-4 text-brand-500" aria-hidden="true" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-ink-900">Aumentar tamanho da fonte</p>
+              <p className="text-xs text-ink-500">Deixa o texto do app maior em todas as telas.</p>
+            </div>
+            <Button
+              type="button"
+              variant={largeText ? "secondary" : "primary"}
+              size="md"
+              className="h-9 shrink-0 px-4 text-xs"
+              onClick={handleToggleLargeText}
+            >
+              {largeText ? "Desativar" : "Ativar"}
+            </Button>
+          </div>
+        </div>
 
         <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
           <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">

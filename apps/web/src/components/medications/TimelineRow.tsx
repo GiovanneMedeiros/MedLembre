@@ -3,6 +3,7 @@ import { Check, Clock3, Loader2 } from "lucide-react";
 import type { TimelineItem } from "../../types/dashboard";
 import { DoseStatusBadge } from "./DoseStatusBadge";
 import { cn } from "../../lib/cn";
+import { medicationDotClass } from "../../lib/medicationColors";
 
 interface TimelineRowProps {
   item: TimelineItem;
@@ -44,7 +45,8 @@ export function TimelineRow({ item, onToggle, isLoading, onSnooze, isSnoozing }:
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-ink-900">
+        <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+          <span className={cn("h-2 w-2 shrink-0 rounded-full", medicationDotClass(item.cor))} aria-hidden="true" />
           {item.horario} · {item.nome}
         </p>
         <p className="truncate text-sm text-ink-500">

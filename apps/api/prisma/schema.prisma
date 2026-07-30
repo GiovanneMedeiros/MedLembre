@@ -49,6 +49,10 @@ model Medication {
   nome           String
   dosagem        String
   observacao     String?
+  // Cor de identificação visual do medicamento (chave, ex: "brand",
+  // "blue"...), pra facilitar reconhecimento rápido — sobretudo pra
+  // usuários idosos com vários remédios cadastrados.
+  cor            String            @default("brand")
   horarios       String[]
   diasSemana     Int[]
   dataInicio     DateTime          @db.Date

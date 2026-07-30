@@ -3,6 +3,7 @@ import { AlarmClock, CalendarClock, CheckCircle2, ListTodo, Loader2, Pill, PlusC
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { StatCard } from "../../components/app/StatCard";
+import { AdherenceCard } from "../../components/app/AdherenceCard";
 import { TimelineRow } from "../../components/medications/TimelineRow";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardSummary } from "../../hooks/useDashboardSummary";
@@ -70,6 +71,8 @@ export function DashboardHomePage() {
               <StatCard label="Tomados hoje" value={String(data.medicamentosTomadosHoje)} icon={CheckCircle2} accent="emerald" />
               <StatCard label="Lembretes pendentes" value={String(data.lembretesPendentesHoje)} icon={ListTodo} accent="amber" />
             </div>
+
+            <AdherenceCard adesaoSemanal={data.adesaoSemanal} />
 
             <div className="mt-8 rounded-2xl border border-ink-900/[0.06] bg-white p-5 shadow-soft sm:p-6">
               <div className="flex items-center justify-between">
