@@ -12,6 +12,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { registerSchema, type RegisterFormValues } from "../../lib/validation/auth";
 import { translateAuthError } from "../../lib/authErrors";
 import { formatWhatsAppInput } from "../../lib/phone";
+import { trackEvent } from "../../lib/fbPixel";
 
 export function RegisterPage() {
   const { signUp } = useAuth();
@@ -35,6 +36,7 @@ export function RegisterPage() {
 
     try {
       const { needsEmailConfirmation } = await signUp(values);
+      trackEvent("CompleteRegistration");
 
       if (needsEmailConfirmation) {
         setSuccessMessage(

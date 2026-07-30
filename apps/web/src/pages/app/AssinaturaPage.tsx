@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Check, Loader2, Star } from "lucide-react";
 import { Container } from "../../components/ui/Container";
@@ -10,6 +10,7 @@ import { PLANS } from "../../data/plans";
 import { formatCurrency } from "../../lib/format";
 import { cn } from "../../lib/cn";
 import { ApiError } from "../../lib/api";
+import { trackEvent } from "../../lib/fbPixel";
 import { useCancelSubscription, useCreateCheckout, useSubscription } from "../../hooks/useSubscription";
 import type { Plano } from "../../types/subscription";
 
@@ -41,13 +42,22 @@ export function AssinaturaPage() {
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
+  useEffect(() => {
+    if (checkoutResult === "sucesso") {
+      trackEvent("Purchase", { currency: "BRL" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function handleSubscribe(planId: string) {
     setCheckoutError(null);
     setPendingPlanId(planId);
     try {
+      const periodicidade = cycle === "annual" ? "ANUAL" : "MENSAL";
+      trackEvent("InitiateCheckout", { plano: planId, periodicidade });
       const result = await createCheckout.mutateAsync({
         plano: PLAN_ID_TO_ENUM[planId],
-        periodicidade: cycle === "annual" ? "ANUAL" : "MENSAL",
+        periodicidade,
       });
       window.location.href = result.checkoutUrl;
     } catch (error) {
