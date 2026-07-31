@@ -7,11 +7,13 @@ export function HowItWorks() {
   return (
     <section id="como-funciona" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading
-          eyebrow="Simples assim"
-          title="Como funciona"
-          description="Três passos para deixar o esquecimento de lado."
-        />
+        <ScrollReveal>
+          <SectionHeading
+            eyebrow="Simples assim"
+            title="Como funciona"
+            description="Três passos para deixar o esquecimento de lado."
+          />
+        </ScrollReveal>
 
         <div className="relative mt-16 grid gap-8 sm:grid-cols-3">
           <div
