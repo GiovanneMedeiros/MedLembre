@@ -17,11 +17,13 @@ export function Pricing() {
   return (
     <section id="planos" className="py-20 sm:py-28">
       <Container>
-        <SectionHeading
-          eyebrow="Planos"
-          title="Escolha o plano ideal para você"
-          description="Comece grátis e evolua conforme a sua rotina de cuidados crescer."
-        />
+        <ScrollReveal>
+          <SectionHeading
+            eyebrow="Planos"
+            title="Escolha o plano ideal para você"
+            description="Comece grátis e evolua conforme a sua rotina de cuidados crescer."
+          />
+        </ScrollReveal>
 
         <div className="mt-8 flex justify-center">
           <SegmentedToggle
@@ -54,10 +56,10 @@ export function Pricing() {
                 key={plan.id}
                 delay={index * 90}
                 className={cn(
-                  "relative flex h-full flex-col rounded-2xl border bg-white p-6",
+                  "relative flex h-full flex-col rounded-2xl border bg-white p-6 transition-all duration-300 hover:-translate-y-1.5",
                   plan.highlighted
-                    ? "border-brand-300 shadow-glow ring-1 ring-brand-200"
-                    : "border-ink-900/[0.06] shadow-soft",
+                    ? "border-brand-300 shadow-glow ring-1 ring-brand-200 hover:shadow-glow"
+                    : "border-ink-900/[0.06] shadow-soft hover:border-brand-200 hover:shadow-lift",
                 )}
               >
                 {plan.highlighted && (

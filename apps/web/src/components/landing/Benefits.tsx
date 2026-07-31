@@ -7,11 +7,13 @@ export function Benefits() {
   return (
     <section id="beneficios" className="bg-white py-20 sm:py-28">
       <Container>
-        <SectionHeading
-          eyebrow="Por que MedLembre"
-          title="Benefícios pensados para a sua rotina"
-          description="Tudo o que você precisa para nunca mais perder a hora de um medicamento."
-        />
+        <ScrollReveal>
+          <SectionHeading
+            eyebrow="Por que MedLembre"
+            title="Benefícios pensados para a sua rotina"
+            description="Tudo o que você precisa para nunca mais perder a hora de um medicamento."
+          />
+        </ScrollReveal>
 
         <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map((benefit, index) => (
