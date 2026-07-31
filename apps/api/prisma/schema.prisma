@@ -53,6 +53,9 @@ model Medication {
   // "blue"...), pra facilitar reconhecimento rápido — sobretudo pra
   // usuários idosos com vários remédios cadastrados.
   cor            String            @default("brand")
+  // Foto do medicamento (ex: da caixinha/embalagem), pra reconhecimento
+  // visual rápido — sobretudo pra usuários idosos.
+  fotoUrl        String?
   horarios       String[]
   diasSemana     Int[]
   dataInicio     DateTime          @db.Date

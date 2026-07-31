@@ -1,17 +1,20 @@
 import { useRef, useState } from "react";
-import { Camera, Loader2, User, X } from "lucide-react";
+import { Camera, ImageIcon, Loader2, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { cn } from "../../lib/cn";
 
 interface PhotoUploadProps {
   value: string;
   onChange: (url: string) => void;
+  bucket: string;
+  shape?: "circle" | "square";
+  fallbackIcon?: React.ReactNode;
 }
 
 const MAX_SIZE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
+export function PhotoUpload({ value, onChange, bucket, shape = "circle", fallbackIcon }: PhotoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,12 +45,10 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
       const extension = file.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("family-photos")
-        .upload(path, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage.from("family-photos").getPublicUrl(path);
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
       onChange(data.publicUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível enviar a foto.");
@@ -58,11 +59,16 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-50 text-brand-400">
+      <div
+        className={cn(
+          "relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden bg-brand-50 text-brand-400",
+          shape === "circle" ? "rounded-full" : "rounded-2xl",
+        )}
+      >
         {value ? (
           <img src={value} alt="" className="h-full w-full object-cover" />
         ) : (
-          <User className="h-7 w-7" aria-hidden="true" />
+          (fallbackIcon ?? <ImageIcon className="h-7 w-7" aria-hidden="true" />)
         )}
         {isUploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-ink-900/40">
@@ -77,9 +83,7 @@ export function PhotoUpload({ value, onChange }: PhotoUploadProps) {
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={isUploading}
-            className={cn(
-              "inline-flex h-9 items-center gap-1.5 rounded-full border border-ink-900/10 px-3.5 text-xs font-semibold text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-600 disabled:opacity-50",
-            )}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-ink-900/10 px-3.5 text-xs font-semibold text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-600 disabled:opacity-50"
           >
             <Camera className="h-3.5 w-3.5" aria-hidden="true" />
             {value ? "Trocar foto" : "Adicionar foto"}

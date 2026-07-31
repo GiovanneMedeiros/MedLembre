@@ -8,6 +8,7 @@ export const medicationSchema = z
     dosagem: z.string().trim().min(1, "Informe a dosagem").max(50),
     observacao: z.string().trim().max(500, "Máximo de 500 caracteres").optional(),
     cor: z.string(),
+    fotoUrl: z.string().optional(),
     horarios: z
       .array(z.string().regex(TIME_PATTERN, "Horário inválido"))
       .min(1, "Adicione ao menos um horário"),

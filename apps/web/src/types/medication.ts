@@ -8,6 +8,7 @@ export interface Medication {
   dosagem: string;
   observacao: string | null;
   cor: string;
+  fotoUrl: string | null;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;
@@ -23,6 +24,7 @@ export interface MedicationInput {
   dosagem: string;
   observacao?: string;
   cor?: string;
+  fotoUrl?: string;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;

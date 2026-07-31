@@ -44,9 +44,15 @@ export function TimelineRow({ item, onToggle, isLoading, onSnooze, isSnoozing }:
         {isLoading ? <Loader2 className="h-4 w-4 animate-spin text-ink-500" /> : <Check className="h-4 w-4" />}
       </button>
 
+      {item.fotoUrl && (
+        <img src={item.fotoUrl} alt="" className="h-9 w-9 shrink-0 rounded-xl object-cover" />
+      )}
+
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-          <span className={cn("h-2 w-2 shrink-0 rounded-full", medicationDotClass(item.cor))} aria-hidden="true" />
+          {!item.fotoUrl && (
+            <span className={cn("h-2 w-2 shrink-0 rounded-full", medicationDotClass(item.cor))} aria-hidden="true" />
+          )}
           {item.horario} · {item.nome}
         </p>
         <p className="truncate text-sm text-ink-500">
