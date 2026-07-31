@@ -47,6 +47,16 @@ export class CreateMedicationDto {
   @IsUrl({}, { message: 'URL da foto inválida' })
   fotoUrl?: string;
 
+  @IsOptional()
+  @IsInt({ message: 'A quantidade em estoque deve ser um número inteiro' })
+  @Min(0, { message: 'A quantidade em estoque não pode ser negativa' })
+  estoqueQuantidade?: number;
+
+  @IsOptional()
+  @IsInt({ message: 'O limiar de alerta deve ser um número inteiro' })
+  @Min(1, { message: 'O limiar de alerta deve ser no mínimo 1' })
+  estoqueAlertaLimiar?: number;
+
   @IsArray({ message: 'Informe ao menos um horário' })
   @ArrayMinSize(1, { message: 'Informe ao menos um horário' })
   @ArrayUnique({ message: 'Os horários não podem se repetir' })

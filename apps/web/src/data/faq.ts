@@ -25,6 +25,16 @@ export const FAQ_ITEMS = [
       "O plano Grátis dá acesso completo por 48 horas, para você testar o MedLembre sem compromisso. Depois desse período, é necessário assinar um dos planos pagos para continuar usando.",
   },
   {
+    question: "O que é o contato de emergência?",
+    answer:
+      "Disponível nos planos Família e Premium: você cadastra o WhatsApp de alguém de confiança (um filho, um cuidador) que é avisado automaticamente se uma dose ficar 30 minutos sem confirmação — útil quando a pessoa que toma o remédio não consegue responder ao lembrete sozinha.",
+  },
+  {
+    question: "Como funciona o controle de estoque?",
+    answer:
+      "Nos planos pagos, você informa quantas doses tem em estoque de cada medicamento. A cada dose confirmada, o MedLembre desconta uma unidade e avisa no seu painel quando está na hora de comprar mais.",
+  },
+  {
     question: "Posso cancelar minha assinatura quando quiser?",
     answer:
       "Sim, o cancelamento pode ser feito a qualquer momento diretamente na sua conta, sem burocracia e sem multa.",

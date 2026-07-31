@@ -63,6 +63,9 @@ export class MedicationsService {
     this.assertValidDateRange(dto.dataInicio, dto.dataFim);
     await this.assertFamilyMemberOwnership(userId, dto.familyMemberId);
     await this.subscriptionsService.assertCanCreateMedication(userId);
+    if (dto.estoqueQuantidade !== undefined) {
+      await this.subscriptionsService.assertEstoqueEnabled(userId);
+    }
 
     return this.prisma.medication.create({
       data: {
@@ -73,6 +76,8 @@ export class MedicationsService {
         observacao: dto.observacao,
         cor: dto.cor,
         fotoUrl: dto.fotoUrl,
+        estoqueQuantidade: dto.estoqueQuantidade,
+        estoqueAlertaLimiar: dto.estoqueAlertaLimiar,
         horarios: dto.horarios,
         diasSemana: dto.diasSemana,
         dataInicio: new Date(dto.dataInicio),
@@ -88,6 +93,9 @@ export class MedicationsService {
     const dataFim =
       dto.dataFim ?? (existing.dataFim ? existing.dataFim.toISOString() : null);
     this.assertValidDateRange(dataInicio, dataFim);
+    if (dto.estoqueQuantidade !== undefined) {
+      await this.subscriptionsService.assertEstoqueEnabled(userId);
+    }
 
     return this.prisma.medication.update({
       where: { id: existing.id },
@@ -97,6 +105,8 @@ export class MedicationsService {
         observacao: dto.observacao,
         cor: dto.cor,
         fotoUrl: dto.fotoUrl,
+        estoqueQuantidade: dto.estoqueQuantidade,
+        estoqueAlertaLimiar: dto.estoqueAlertaLimiar,
         horarios: dto.horarios,
         diasSemana: dto.diasSemana,
         dataInicio: dto.dataInicio ? new Date(dto.dataInicio) : undefined,
@@ -129,34 +139,48 @@ export class MedicationsService {
     medicationId: string,
     scheduledFor: string,
   ) {
-    await this.findOneOrThrow(userId, medicationId);
+    const medication = await this.findOneOrThrow(userId, medicationId);
+    const scheduledForDate = new Date(scheduledFor);
 
-    return this.prisma.doseRecord.upsert({
+    const existing = await this.prisma.doseRecord.findUnique({
       where: {
-        medicationId_scheduledFor: {
-          medicationId,
-          scheduledFor: new Date(scheduledFor),
-        },
+        medicationId_scheduledFor: { medicationId, scheduledFor: scheduledForDate },
       },
-      create: {
-        medicationId,
-        userId,
-        scheduledFor: new Date(scheduledFor),
-      },
-      update: {},
     });
+    if (existing) return existing;
+
+    const doseRecord = await this.prisma.doseRecord.create({
+      data: { medicationId, userId, scheduledFor: scheduledForDate },
+    });
+
+    // Controle de estoque (recurso pago): cada dose confirmada consome uma
+    // unidade, até o mínimo de zero.
+    if (medication.estoqueQuantidade !== null && medication.estoqueQuantidade > 0) {
+      await this.prisma.medication.update({
+        where: { id: medicationId },
+        data: { estoqueQuantidade: medication.estoqueQuantidade - 1 },
+      });
+    }
+
+    return doseRecord;
   }
 
   async unmarkDose(userId: string, medicationId: string, scheduledFor: string) {
-    await this.findOneOrThrow(userId, medicationId);
+    const medication = await this.findOneOrThrow(userId, medicationId);
+    const scheduledForDate = new Date(scheduledFor);
 
-    await this.prisma.doseRecord.deleteMany({
-      where: {
-        medicationId,
-        userId,
-        scheduledFor: new Date(scheduledFor),
-      },
+    const deleted = await this.prisma.doseRecord.deleteMany({
+      where: { medicationId, userId, scheduledFor: scheduledForDate },
     });
+
+    // Desmarcar devolve a unidade ao estoque (a dose deixou de ser
+    // consumida).
+    if (deleted.count > 0 && medication.estoqueQuantidade !== null) {
+      await this.prisma.medication.update({
+        where: { id: medicationId },
+        data: { estoqueQuantidade: medication.estoqueQuantidade + 1 },
+      });
+    }
   }
 
   /**

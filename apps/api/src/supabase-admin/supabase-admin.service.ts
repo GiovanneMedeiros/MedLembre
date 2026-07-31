@@ -48,6 +48,15 @@ export class SupabaseAdminService {
     };
   }
 
+  async getUserEmail(userId: string): Promise<string | null> {
+    if (!this.client) return null;
+
+    const { data, error } = await this.client.auth.admin.getUserById(userId);
+    if (error || !data.user) return null;
+
+    return data.user.email ?? null;
+  }
+
   async deleteUser(userId: string): Promise<void> {
     if (!this.client) {
       throw new Error('Supabase admin não configurado — não é possível excluir a conta.');

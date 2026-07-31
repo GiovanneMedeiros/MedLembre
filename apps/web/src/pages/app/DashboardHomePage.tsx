@@ -4,6 +4,7 @@ import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { StatCard } from "../../components/app/StatCard";
 import { AdherenceCard } from "../../components/app/AdherenceCard";
+import { EstoqueAlertBanner } from "../../components/app/EstoqueAlertBanner";
 import { TimelineRow } from "../../components/medications/TimelineRow";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardSummary } from "../../hooks/useDashboardSummary";
@@ -73,6 +74,7 @@ export function DashboardHomePage() {
             </div>
 
             <AdherenceCard adesaoSemanal={data.adesaoSemanal} />
+            <EstoqueAlertBanner alertas={data.alertasEstoque} />
 
             <div className="mt-8 rounded-2xl border border-ink-900/[0.06] bg-white p-5 shadow-soft sm:p-6">
               <div className="flex items-center justify-between">

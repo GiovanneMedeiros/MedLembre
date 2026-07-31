@@ -36,6 +36,7 @@ export class SubscriptionsController {
       hasFamilyAccess,
       trialExpiresAt: this.subscriptionsService.trialExpiresAt(subscription),
       trialExpired: this.subscriptionsService.isTrialExpired(subscription),
+      capabilities: await this.subscriptionsService.getCapabilities(user.id),
     };
   }
 

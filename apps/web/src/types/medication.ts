@@ -9,6 +9,8 @@ export interface Medication {
   observacao: string | null;
   cor: string;
   fotoUrl: string | null;
+  estoqueQuantidade: number | null;
+  estoqueAlertaLimiar: number | null;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;
@@ -25,6 +27,8 @@ export interface MedicationInput {
   observacao?: string;
   cor?: string;
   fotoUrl?: string;
+  estoqueQuantidade?: number;
+  estoqueAlertaLimiar?: number;
   horarios: string[];
   diasSemana: number[];
   dataInicio: string;

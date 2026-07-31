@@ -1,4 +1,4 @@
-import { Clock, MoreVertical, Pause, Pencil, Play, Trash2 } from "lucide-react";
+import { AlertTriangle, Clock, MoreVertical, Pause, Pencil, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { MedicationStatusBadge } from "./MedicationStatusBadge";
 import type { Medication } from "../../types/medication";
@@ -17,6 +17,10 @@ interface MedicationCardProps {
 export function MedicationCard({ medication, onEdit, onDelete, onToggleStatus, isTogglingStatus }: MedicationCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isActive = medication.status === "ATIVO";
+  const estoqueBaixo =
+    medication.estoqueQuantidade !== null &&
+    medication.estoqueAlertaLimiar !== null &&
+    medication.estoqueQuantidade <= medication.estoqueAlertaLimiar;
 
   return (
     <div
@@ -106,6 +110,13 @@ export function MedicationCard({ medication, onEdit, onDelete, onToggleStatus, i
         {medication.horarios.join(" · ")}
       </div>
       <p className="mt-1 text-xs text-ink-300">{formatDiasSemana(medication.diasSemana)}</p>
+
+      {estoqueBaixo && (
+        <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          Estoque baixo: restam {medication.estoqueQuantidade}
+        </div>
+      )}
 
       <div className="mt-4 flex items-center justify-between border-t border-ink-900/[0.06] pt-4">
         <p className="text-xs text-ink-300">

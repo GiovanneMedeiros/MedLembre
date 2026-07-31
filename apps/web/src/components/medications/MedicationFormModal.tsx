@@ -11,8 +11,10 @@ import { WeekdayToggle } from "./WeekdayToggle";
 import { ColorPicker } from "./ColorPicker";
 import { PhotoUpload } from "../ui/PhotoUpload";
 import { Pill } from "lucide-react";
+import { Link } from "react-router-dom";
 import { medicationSchema, type MedicationFormValues } from "../../lib/validation/medication";
 import { useCreateMedication, useUpdateMedication } from "../../hooks/useMedications";
+import { useSubscription } from "../../hooks/useSubscription";
 import type { Medication } from "../../types/medication";
 import { ApiError } from "../../lib/api";
 import { todayLocalDateString } from "../../lib/date";
@@ -35,6 +37,8 @@ function getEmptyValues(): MedicationFormValues {
     observacao: "",
     cor: "brand",
     fotoUrl: "",
+    estoqueQuantidade: "",
+    estoqueAlertaLimiar: "",
     horarios: [],
     diasSemana: [],
     dataInicio: todayLocalDateString(),
@@ -46,6 +50,8 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
   const isEditing = Boolean(medication);
   const createMedication = useCreateMedication();
   const updateMedication = useUpdateMedication();
+  const { data: subscription } = useSubscription();
+  const estoqueEnabled = subscription?.capabilities.estoqueEnabled ?? false;
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -71,6 +77,10 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
         observacao: medication.observacao ?? "",
         cor: medication.cor,
         fotoUrl: medication.fotoUrl ?? "",
+        estoqueQuantidade:
+          medication.estoqueQuantidade !== null ? String(medication.estoqueQuantidade) : "",
+        estoqueAlertaLimiar:
+          medication.estoqueAlertaLimiar !== null ? String(medication.estoqueAlertaLimiar) : "",
         horarios: medication.horarios,
         diasSemana: medication.diasSemana,
         dataInicio: toDateInputValue(medication.dataInicio),
@@ -90,6 +100,10 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
       observacao: values.observacao || undefined,
       cor: values.cor,
       fotoUrl: values.fotoUrl || undefined,
+      estoqueQuantidade:
+        estoqueEnabled && values.estoqueQuantidade ? Number(values.estoqueQuantidade) : undefined,
+      estoqueAlertaLimiar:
+        estoqueEnabled && values.estoqueAlertaLimiar ? Number(values.estoqueAlertaLimiar) : undefined,
       horarios: values.horarios,
       diasSemana: values.diasSemana,
       dataInicio: values.dataInicio,
@@ -166,6 +180,49 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
             render={({ field }) => <ColorPicker value={field.value} onChange={field.onChange} />}
           />
         </FormField>
+
+        {estoqueEnabled ? (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              label="Estoque atual (opcional)"
+              htmlFor="estoqueQuantidade"
+              error={errors.estoqueQuantidade?.message}
+            >
+              <input
+                id="estoqueQuantidade"
+                type="number"
+                min={0}
+                inputMode="numeric"
+                className={inputClassName}
+                placeholder="Ex: 30"
+                {...register("estoqueQuantidade")}
+              />
+            </FormField>
+            <FormField
+              label="Avisar quando restar"
+              htmlFor="estoqueAlertaLimiar"
+              error={errors.estoqueAlertaLimiar?.message}
+            >
+              <input
+                id="estoqueAlertaLimiar"
+                type="number"
+                min={1}
+                inputMode="numeric"
+                className={inputClassName}
+                placeholder="Ex: 5"
+                {...register("estoqueAlertaLimiar")}
+              />
+            </FormField>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-ink-900/[0.12] px-4 py-3 text-xs text-ink-500">
+            <span className="font-semibold text-brand-600">Planos pagos:</span> controle quantas doses restam e
+            receba um alerta pra repor a tempo.{" "}
+            <Link to="/dashboard/assinatura" className="font-semibold text-brand-600 hover:text-brand-700">
+              Fazer upgrade
+            </Link>
+          </div>
+        )}
 
         <FormField label="Horários" htmlFor="horarios" error={errors.horarios?.message}>
           <Controller

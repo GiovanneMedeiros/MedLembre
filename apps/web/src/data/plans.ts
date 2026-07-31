@@ -27,6 +27,9 @@ export const PLANS: Plan[] = [
     features: [
       "Até 5 medicamentos",
       "Lembretes ilimitados por notificação push",
+      "Lembretes também por WhatsApp/SMS",
+      "Controle de estoque com alerta de reposição",
+      "Alerta de horários muito próximos",
       "1 perfil",
       "Histórico de 30 dias",
       "Exportar histórico em CSV",
@@ -42,7 +45,12 @@ export const PLANS: Plan[] = [
     features: [
       "Medicamentos ilimitados",
       "Lembretes ilimitados por notificação push",
+      "Lembretes também por WhatsApp/SMS",
+      "Controle de estoque com alerta de reposição",
+      "Alerta de horários muito próximos",
       "Até 5 perfis familiares",
+      "1 contato de emergência avisado se a dose não for confirmada",
+      "Relatório semanal de adesão por e-mail",
       "Histórico de 90 dias",
       "Exportar histórico em CSV",
       "Suporte prioritário",
@@ -57,6 +65,7 @@ export const PLANS: Plan[] = [
     features: [
       "Tudo do plano Família",
       "Perfis familiares ilimitados",
+      "Até 3 contatos de emergência",
       "Histórico completo",
       "Suporte prioritário por e-mail",
     ],
