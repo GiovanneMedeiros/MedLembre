@@ -20,14 +20,13 @@ export const PLANS: Plan[] = [
   {
     id: "essencial",
     name: "Essencial",
-    description: "Organize sua rotina com lembretes por WhatsApp e controle de estoque.",
+    description: "Organize sua rotina com controle de estoque e alertas inteligentes.",
     monthlyPrice: 39.9,
     annualPrice: 359,
     highlighted: true,
     features: [
       "Até 5 medicamentos",
       "Lembretes ilimitados por notificação push",
-      "Lembretes também por WhatsApp/SMS",
       "Controle de estoque com alerta de reposição",
       "Alerta de horários muito próximos",
       "1 perfil",
@@ -39,17 +38,15 @@ export const PLANS: Plan[] = [
   {
     id: "familia",
     name: "Família",
-    description: "Cuide de quem você ama, com aviso automático se uma dose passar batido.",
+    description: "Para cuidar da sua rotina e da de quem você ama.",
     monthlyPrice: 59.9,
     annualPrice: 539,
     features: [
       "Medicamentos ilimitados",
       "Lembretes ilimitados por notificação push",
-      "Lembretes também por WhatsApp/SMS",
       "Controle de estoque com alerta de reposição",
       "Alerta de horários muito próximos",
       "Até 5 perfis familiares",
-      "1 contato de emergência avisado se a dose não for confirmada",
       "Relatório semanal de adesão por e-mail",
       "Histórico de 90 dias",
       "Exportar histórico em CSV",
@@ -65,7 +62,6 @@ export const PLANS: Plan[] = [
     features: [
       "Tudo do plano Família",
       "Perfis familiares ilimitados",
-      "Até 3 contatos de emergência",
       "Histórico completo",
       "Suporte prioritário por e-mail",
     ],
