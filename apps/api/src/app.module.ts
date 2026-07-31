@@ -15,6 +15,8 @@ import { SupabaseAdminModule } from './supabase-admin/supabase-admin.module';
 import { WhatsAppModule } from './whatsapp/whatsapp.module';
 import { PushModule } from './push/push.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts.module';
+import { WeeklyReportsModule } from './weekly-reports/weekly-reports.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { RemindersModule } from './reminders/reminders.module';
     WhatsAppModule,
     PushModule,
     RemindersModule,
+    EmergencyContactsModule,
+    WeeklyReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

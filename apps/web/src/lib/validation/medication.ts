@@ -9,6 +9,15 @@ export const medicationSchema = z
     observacao: z.string().trim().max(500, "Máximo de 500 caracteres").optional(),
     cor: z.string(),
     fotoUrl: z.string().optional(),
+    estoqueQuantidade: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d+$/.test(v), "Deve ser um número inteiro (0 ou mais)"),
+    estoqueAlertaLimiar: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d+$/.test(v), "Deve ser um número inteiro (mínimo 1)")
+      .refine((v) => !v || Number(v) >= 1, "Deve ser no mínimo 1"),
     horarios: z
       .array(z.string().regex(TIME_PATTERN, "Horário inválido"))
       .min(1, "Adicione ao menos um horário"),

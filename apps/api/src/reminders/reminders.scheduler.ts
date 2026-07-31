@@ -11,6 +11,7 @@ import { toWhatsAppNumber } from '../common/phone.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
 import { SmsService } from '../sms/sms.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { SupabaseAdminService } from '../supabase-admin/supabase-admin.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
@@ -22,6 +23,10 @@ type MedicationWithFamily = Medication & { familyMember: FamilyMember | null };
 // madrugada inteira por uma dose que ela não vai mais tomar).
 export const NUDGE_INTERVAL_MINUTES = 5;
 const NUDGE_GIVE_UP_HOURS = 4;
+// Depois de quantos minutos sem confirmação um contato de emergência
+// (recurso Família/Premium) é avisado — mesmo limiar usado pra marcar
+// uma dose como "atrasada" no dashboard.
+const ESCALATION_THRESHOLD_MINUTES = 30;
 
 @Injectable()
 export class RemindersScheduler {
@@ -33,6 +38,7 @@ export class RemindersScheduler {
     private readonly whatsapp: WhatsAppService,
     private readonly sms: SmsService,
     private readonly push: PushService,
+    private readonly subscriptionsService: SubscriptionsService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -120,12 +126,59 @@ export class RemindersScheduler {
       });
       if (alreadyTaken) continue;
 
+      if (!log.escalatedAt && hoursLate * 60 >= ESCALATION_THRESHOLD_MINUTES) {
+        await this.escalateIfNeeded(log, now);
+      }
+
       await this.dispatchReminder(
         log.medication,
         log.scheduledFor,
         currentTimeString(log.scheduledFor),
       );
     }
+  }
+
+  /**
+   * Avisa os contatos de emergência do usuário (recurso Família/Premium)
+   * quando uma dose fica ESCALATION_THRESHOLD_MINUTES sem confirmação.
+   * Envia uma única vez por dose (marca escalatedAt) pra não repetir a
+   * cada ciclo de nudge de 5 em 5 minutos.
+   */
+  private async escalateIfNeeded(
+    log: { id: string; userId: string; scheduledFor: Date; medication: MedicationWithFamily },
+    now: Date,
+  ) {
+    const capabilities = await this.subscriptionsService.getCapabilities(
+      log.userId,
+    );
+    if (capabilities.maxEmergencyContacts === 0) return;
+
+    const contacts = await this.prisma.emergencyContact.findMany({
+      where: { userId: log.userId },
+    });
+    if (contacts.length === 0) return;
+
+    const horario = currentTimeString(log.scheduledFor);
+    const message = `⚠️ MedLembre: o lembrete de "${log.medication.nome}" das ${horario} ainda não foi confirmado. Pode verificar se está tudo bem?`;
+
+    await Promise.all(
+      contacts.map((contact) =>
+        this.whatsapp
+          .sendFamilyNotification(toWhatsAppNumber(contact.whatsapp), message)
+          .catch((error) => {
+            const errMessage =
+              error instanceof Error ? error.message : 'Erro desconhecido';
+            this.logger.error(
+              `Falha ao notificar contato de emergência ${contact.id}: ${errMessage}`,
+            );
+          }),
+      ),
+    );
+
+    await this.prisma.reminderLog.update({
+      where: { id: log.id },
+      data: { escalatedAt: now },
+    });
   }
 
   private async dispatchReminder(
@@ -151,9 +204,14 @@ export class RemindersScheduler {
         );
       });
 
-    const phoneDigits =
-      medication.familyMember?.whatsapp ??
-      (await this.supabaseAdmin.getOwnerContact(medication.userId)).whatsapp;
+    const capabilities = await this.subscriptionsService.getCapabilities(
+      medication.userId,
+    );
+
+    const phoneDigits = capabilities.whatsappEnabled
+      ? (medication.familyMember?.whatsapp ??
+        (await this.supabaseAdmin.getOwnerContact(medication.userId)).whatsapp)
+      : null;
 
     if (phoneDigits) {
       const baseInput = {

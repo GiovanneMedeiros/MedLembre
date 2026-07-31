@@ -11,6 +11,12 @@ export interface TimelineItem {
   status: DoseStatus;
 }
 
+export interface EstoqueAlerta {
+  medicationId: string;
+  nome: string;
+  estoqueQuantidade: number;
+}
+
 export interface DashboardSummary {
   medicamentosCadastrados: number;
   medicamentosTomadosHoje: number;
@@ -18,6 +24,7 @@ export interface DashboardSummary {
   proximoMedicamento: TimelineItem | null;
   timelineHoje: TimelineItem[];
   adesaoSemanal: number | null;
+  alertasEstoque: EstoqueAlerta[];
 }
 
 export interface HistoricoResult {

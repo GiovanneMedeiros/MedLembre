@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Pill, PlusCircle } from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
@@ -6,17 +6,27 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PageHeader } from "../../components/app/PageHeader";
 import { MedicationCard } from "../../components/medications/MedicationCard";
 import { MedicationFormModal } from "../../components/medications/MedicationFormModal";
+import { ScheduleConflictBanner } from "../../components/medications/ScheduleConflictBanner";
 import {
   useDeleteMedication,
   useMedications,
   useUpdateMedicationStatus,
 } from "../../hooks/useMedications";
+import { useSubscription } from "../../hooks/useSubscription";
+import { findScheduleConflicts } from "../../lib/scheduleConflicts";
 import type { Medication } from "../../types/medication";
 
 export function MedicationsListPage() {
   const { data: medications, isLoading, isError } = useMedications();
+  const { data: subscription } = useSubscription();
   const updateStatus = useUpdateMedicationStatus();
   const deleteMedication = useDeleteMedication();
+
+  const conflictAlertEnabled = subscription?.capabilities.conflictAlertEnabled ?? false;
+  const conflicts = useMemo(
+    () => (conflictAlertEnabled && medications ? findScheduleConflicts(medications) : []),
+    [conflictAlertEnabled, medications],
+  );
 
   const [formState, setFormState] = useState<{ open: boolean; medication: Medication | null }>({
     open: false,
@@ -79,6 +89,8 @@ export function MedicationsListPage() {
             </Button>
           </div>
         )}
+
+        <ScheduleConflictBanner conflicts={conflicts} />
 
         {medications && medications.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

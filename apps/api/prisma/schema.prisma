@@ -56,6 +56,12 @@ model Medication {
   // Foto do medicamento (ex: da caixinha/embalagem), pra reconhecimento
   // visual rápido — sobretudo pra usuários idosos.
   fotoUrl        String?
+  // Controle de estoque (recurso pago): quantas unidades restam e a partir
+  // de quantas unidades restantes o app deve alertar sobre reposição.
+  // null em qualquer um dos dois = controle de estoque desativado pra
+  // esse medicamento.
+  estoqueQuantidade    Int?
+  estoqueAlertaLimiar  Int?              @default(5)
   horarios       String[]
   diasSemana     Int[]
   dataInicio     DateTime          @db.Date
@@ -153,6 +159,21 @@ model FamilyMember {
   @@map("family_members")
 }
 
+// Contato avisado automaticamente (WhatsApp) quando uma dose fica sem
+// confirmação por tempo demais — recurso pago (Família/Premium),
+// pensado pra um cuidador que não é quem recebe o lembrete original.
+model EmergencyContact {
+  id        String   @id @default(uuid())
+  userId    String
+  nome      String
+  whatsapp  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("emergency_contacts")
+}
+
 // Registra cada tentativa de envio de lembrete pelo WhatsApp e o
 // resultado (inclusive quando simulado, por falta de credenciais).
 model ReminderLog {
@@ -165,6 +186,9 @@ model ReminderLog {
   status            ReminderStatus
   providerMessageId String?
   snoozedUntil      DateTime?
+  // Preenchido quando um contato de emergência já foi avisado sobre essa
+  // dose sem confirmação, pra não notificar repetidamente a cada nudge.
+  escalatedAt       DateTime?
   errorMessage      String?
   createdAt         DateTime        @default(now())
 

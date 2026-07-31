@@ -115,6 +115,40 @@ export class SubscriptionsService {
     return PLAN_LIMITS[plano].historyDays;
   }
 
+  async getCapabilities(userId: string) {
+    const plano = await this.getPlano(userId);
+    return PLAN_LIMITS[plano];
+  }
+
+  async assertEstoqueEnabled(userId: string): Promise<void> {
+    const plano = await this.getPlano(userId);
+    if (!PLAN_LIMITS[plano].estoqueEnabled) {
+      throw new ForbiddenException(
+        'O controle de estoque está disponível a partir do plano Essencial.',
+      );
+    }
+  }
+
+  async assertCanCreateEmergencyContact(userId: string): Promise<void> {
+    const plano = await this.getPlano(userId);
+    const limit = PLAN_LIMITS[plano].maxEmergencyContacts;
+
+    if (limit === 0) {
+      throw new ForbiddenException(
+        'O contato de emergência está disponível nos planos Família e Premium.',
+      );
+    }
+
+    const count = await this.prisma.emergencyContact.count({
+      where: { userId },
+    });
+    if (count >= limit) {
+      throw new ForbiddenException(
+        `Seu plano atual permite no máximo ${limit} contato${limit === 1 ? '' : 's'} de emergência.`,
+      );
+    }
+  }
+
   async createCheckoutSession(
     userId: string,
     email: string,

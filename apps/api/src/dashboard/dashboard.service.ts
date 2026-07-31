@@ -9,6 +9,7 @@ import {
 import type {
   DashboardSummary,
   DoseStatus,
+  EstoqueAlerta,
   HistoricoResult,
   TimelineItem,
 } from './dashboard.types';
@@ -128,6 +129,8 @@ export class DashboardService {
       now,
     );
 
+    const alertasEstoque = await this.computeEstoqueAlertas(userId, medications);
+
     return {
       medicamentosCadastrados: totalCount,
       medicamentosTomadosHoje,
@@ -135,10 +138,32 @@ export class DashboardService {
       proximoMedicamento,
       timelineHoje,
       adesaoSemanal,
+      alertasEstoque,
     };
   }
 
-  private async computeWeeklyAdherence(
+  private async computeEstoqueAlertas(
+    userId: string,
+    medications: { id: string; nome: string; estoqueQuantidade: number | null; estoqueAlertaLimiar: number | null }[],
+  ): Promise<EstoqueAlerta[]> {
+    const capabilities = await this.subscriptionsService.getCapabilities(userId);
+    if (!capabilities.estoqueEnabled) return [];
+
+    return medications
+      .filter(
+        (m) =>
+          m.estoqueQuantidade !== null &&
+          m.estoqueAlertaLimiar !== null &&
+          m.estoqueQuantidade <= m.estoqueAlertaLimiar,
+      )
+      .map((m) => ({
+        medicationId: m.id,
+        nome: m.nome,
+        estoqueQuantidade: m.estoqueQuantidade as number,
+      }));
+  }
+
+  async computeWeeklyAdherence(
     userId: string,
     familyMemberId: string | null,
     todayOnly: string,
