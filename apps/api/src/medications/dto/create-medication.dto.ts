@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  IsUrl,
   Matches,
   MaxLength,
   Max,
@@ -41,6 +42,10 @@ export class CreateMedicationDto {
   @IsOptional()
   @IsIn(MEDICATION_COLORS, { message: 'Cor inválida' })
   cor?: string;
+
+  @IsOptional()
+  @IsUrl({}, { message: 'URL da foto inválida' })
+  fotoUrl?: string;
 
   @IsArray({ message: 'Informe ao menos um horário' })
   @ArrayMinSize(1, { message: 'Informe ao menos um horário' })

@@ -26,11 +26,19 @@ export function MedicationCard({ medication, onEdit, onDelete, onToggleStatus, i
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <span
-            className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", medicationDotClass(medication.cor))}
-            aria-hidden="true"
-          />
+        <div className="flex min-w-0 items-start gap-3">
+          {medication.fotoUrl ? (
+            <img
+              src={medication.fotoUrl}
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-xl object-cover"
+            />
+          ) : (
+            <span
+              className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", medicationDotClass(medication.cor))}
+              aria-hidden="true"
+            />
+          )}
           <div className="min-w-0">
             <h3 className="truncate text-base font-bold text-ink-900">{medication.nome}</h3>
             <p className="text-sm text-ink-500">{medication.dosagem}</p>

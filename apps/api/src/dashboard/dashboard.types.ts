@@ -6,6 +6,7 @@ export interface TimelineItem {
   nome: string;
   dosagem: string;
   cor: string;
+  fotoUrl: string | null;
   horario: string;
   scheduledFor: string;
   status: DoseStatus;

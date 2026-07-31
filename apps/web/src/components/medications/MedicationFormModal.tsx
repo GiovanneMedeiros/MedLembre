@@ -9,6 +9,8 @@ import { inputClassName } from "../auth/inputClassName";
 import { TimeListInput } from "./TimeListInput";
 import { WeekdayToggle } from "./WeekdayToggle";
 import { ColorPicker } from "./ColorPicker";
+import { PhotoUpload } from "../ui/PhotoUpload";
+import { Pill } from "lucide-react";
 import { medicationSchema, type MedicationFormValues } from "../../lib/validation/medication";
 import { useCreateMedication, useUpdateMedication } from "../../hooks/useMedications";
 import type { Medication } from "../../types/medication";
@@ -32,6 +34,7 @@ function getEmptyValues(): MedicationFormValues {
     dosagem: "",
     observacao: "",
     cor: "brand",
+    fotoUrl: "",
     horarios: [],
     diasSemana: [],
     dataInicio: todayLocalDateString(),
@@ -67,6 +70,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
         dosagem: medication.dosagem,
         observacao: medication.observacao ?? "",
         cor: medication.cor,
+        fotoUrl: medication.fotoUrl ?? "",
         horarios: medication.horarios,
         diasSemana: medication.diasSemana,
         dataInicio: toDateInputValue(medication.dataInicio),
@@ -85,6 +89,7 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
       dosagem: values.dosagem,
       observacao: values.observacao || undefined,
       cor: values.cor,
+      fotoUrl: values.fotoUrl || undefined,
       horarios: values.horarios,
       diasSemana: values.diasSemana,
       dataInicio: values.dataInicio,
@@ -135,6 +140,22 @@ export function MedicationFormModal({ isOpen, onClose, medication }: MedicationF
             className={`${inputClassName} h-auto resize-none py-2.5`}
             placeholder="Ex: Tomar em jejum"
             {...register("observacao")}
+          />
+        </FormField>
+
+        <FormField label="Foto (opcional)" htmlFor="fotoUrl" error={errors.fotoUrl?.message}>
+          <Controller
+            control={control}
+            name="fotoUrl"
+            render={({ field }) => (
+              <PhotoUpload
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                bucket="medication-photos"
+                shape="square"
+                fallbackIcon={<Pill className="h-7 w-7" aria-hidden="true" />}
+              />
+            )}
           />
         </FormField>
 
