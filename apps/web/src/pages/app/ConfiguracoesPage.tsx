@@ -8,7 +8,6 @@ import {
   KeyRound,
   Mail,
   Phone,
-  ShieldAlert,
   Trash2,
   Type,
   User,
@@ -21,13 +20,8 @@ import { inputClassName } from "../../components/auth/inputClassName";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSubscription } from "../../hooks/useSubscription";
 import { useHistorico } from "../../hooks/useHistorico";
-import {
-  useCreateEmergencyContact,
-  useDeleteEmergencyContact,
-  useEmergencyContacts,
-} from "../../hooks/useEmergencyContacts";
 import { api, ApiError } from "../../lib/api";
-import { formatWhatsAppInput, isValidBrazilianWhatsApp, normalizePhoneDigits } from "../../lib/phone";
+import { formatWhatsAppInput } from "../../lib/phone";
 import { formatDateBR } from "../../lib/date";
 import {
   disablePushNotifications,
@@ -59,14 +53,6 @@ export function ConfiguracoesPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const { data: emergencyContacts } = useEmergencyContacts();
-  const createEmergencyContact = useCreateEmergencyContact();
-  const deleteEmergencyContact = useDeleteEmergencyContact();
-  const [isAddingContact, setIsAddingContact] = useState(false);
-  const [contactNome, setContactNome] = useState("");
-  const [contactWhatsapp, setContactWhatsapp] = useState("");
-  const [contactError, setContactError] = useState<string | null>(null);
 
   const [largeText, setLargeTextState] = useState(false);
   useEffect(() => {
@@ -137,31 +123,6 @@ export function ConfiguracoesPage() {
 
   const hasPrioritySupport = subscription ? PRIORITY_SUPPORT_PLANS.includes(subscription.plano) : false;
   const canExportHistory = subscription ? subscription.plano !== "GRATIS" : false;
-  const maxEmergencyContacts = subscription?.capabilities.maxEmergencyContacts ?? 0;
-  const canAddMoreContacts = (emergencyContacts?.length ?? 0) < maxEmergencyContacts;
-
-  async function handleAddContact() {
-    if (contactNome.trim().length < 2) {
-      setContactError("O nome deve ter no mínimo 2 caracteres.");
-      return;
-    }
-    if (!isValidBrazilianWhatsApp(contactWhatsapp)) {
-      setContactError("Informe um número de WhatsApp válido, com DDD.");
-      return;
-    }
-    setContactError(null);
-    try {
-      await createEmergencyContact.mutateAsync({
-        nome: contactNome.trim(),
-        whatsapp: normalizePhoneDigits(contactWhatsapp),
-      });
-      setContactNome("");
-      setContactWhatsapp("");
-      setIsAddingContact(false);
-    } catch (error) {
-      setContactError(error instanceof ApiError ? error.message : "Não foi possível salvar o contato.");
-    }
-  }
 
   function handleExportHistory() {
     if (!historico) return;
@@ -346,107 +307,6 @@ export function ConfiguracoesPage() {
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
-          <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">
-            <h2 className="text-sm font-bold text-ink-900">Contato de emergência</h2>
-            {maxEmergencyContacts === 0 && (
-              <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-600">
-                Família e Premium
-              </span>
-            )}
-          </div>
-
-          {maxEmergencyContacts === 0 ? (
-            <div className="flex items-center gap-3 px-5 py-4">
-              <ShieldAlert className="h-4 w-4 text-brand-500" aria-hidden="true" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-ink-900">Avise alguém se uma dose não for confirmada</p>
-                <p className="text-xs text-ink-500">
-                  Se o lembrete ficar 30 min sem resposta, avisamos automaticamente por WhatsApp.
-                </p>
-              </div>
-              <Button as="link" to="/dashboard/assinatura" variant="secondary" size="md" className="h-9 shrink-0 px-4 text-xs">
-                Fazer upgrade
-              </Button>
-            </div>
-          ) : (
-            <div className="px-5 py-4">
-              <p className="mb-3 text-xs text-ink-500">
-                Se um lembrete ficar 30 minutos sem confirmação, avisamos essa pessoa por WhatsApp.
-              </p>
-
-              {emergencyContacts && emergencyContacts.length > 0 && (
-                <ul className="mb-3 divide-y divide-ink-900/[0.06]">
-                  {emergencyContacts.map((contact) => (
-                    <li key={contact.id} className="flex items-center gap-3 py-2.5">
-                      <ShieldAlert className="h-4 w-4 shrink-0 text-brand-500" aria-hidden="true" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-ink-900">{contact.nome}</p>
-                        <p className="text-xs text-ink-500">{formatWhatsAppInput(contact.whatsapp)}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteEmergencyContact.mutate(contact.id)}
-                        className="shrink-0 text-xs font-semibold text-red-600 hover:text-red-700"
-                      >
-                        Remover
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {isAddingContact ? (
-                <div className="flex flex-col gap-3 rounded-xl bg-ink-900/[0.02] p-3">
-                  {contactError && <p className="text-xs text-red-600">{contactError}</p>}
-                  <input
-                    className={inputClassName}
-                    placeholder="Nome do contato"
-                    value={contactNome}
-                    onChange={(e) => setContactNome(e.target.value)}
-                  />
-                  <input
-                    className={inputClassName}
-                    placeholder="(11) 91234-5678"
-                    value={contactWhatsapp}
-                    onChange={(e) => setContactWhatsapp(formatWhatsAppInput(e.target.value))}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      className="h-9 px-4 text-xs"
-                      onClick={() => {
-                        setIsAddingContact(false);
-                        setContactError(null);
-                      }}
-                      disabled={createEmergencyContact.isPending}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      size="md"
-                      className="h-9 px-4 text-xs"
-                      onClick={handleAddContact}
-                      disabled={createEmergencyContact.isPending}
-                    >
-                      {createEmergencyContact.isPending ? "Salvando..." : "Salvar contato"}
-                    </Button>
-                  </div>
-                </div>
-              ) : canAddMoreContacts ? (
-                <Button variant="secondary" size="md" className="h-9 px-4 text-xs" onClick={() => setIsAddingContact(true)}>
-                  Adicionar contato
-                </Button>
-              ) : (
-                <p className="text-xs text-ink-500">
-                  Seu plano permite até {maxEmergencyContacts} contato{maxEmergencyContacts === 1 ? "" : "s"} de emergência.
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
