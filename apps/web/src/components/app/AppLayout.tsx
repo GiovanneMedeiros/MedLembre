@@ -4,6 +4,7 @@ import { LogOut, Menu, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { SidebarNav } from "./SidebarNav";
 import { InstallAppBanner } from "./InstallAppBanner";
+import { PushNotificationBanner } from "./PushNotificationBanner";
 import { TrialBanner } from "./TrialBanner";
 import { TrialExpiredScreen } from "./TrialExpiredScreen";
 import { FamilyScopeSwitcher } from "./FamilyScopeSwitcher";
@@ -130,6 +131,7 @@ export function AppLayout() {
 
       <main className="min-w-0 flex-1">
         <InstallAppBanner />
+        <PushNotificationBanner />
         {subscription?.plano === "GRATIS" && !subscription.trialExpired && subscription.trialExpiresAt && (
           <TrialBanner trialExpiresAt={subscription.trialExpiresAt} />
         )}
