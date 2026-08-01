@@ -159,6 +159,32 @@ model FamilyMember {
   @@map("family_members")
 }
 
+// Última atividade autenticada de cada usuário — base pro "online agora"
+// do painel /adm. Atualizado por um interceptor global, com throttle em
+// memória (não escreve a cada requisição, só quando o registro está
+// "velho" o suficiente).
+model UserActivity {
+  userId     String   @id
+  lastSeenAt DateTime
+
+  @@index([lastSeenAt])
+  @@map("user_activity")
+}
+
+// Pageview de primeira parte (sem depender de Vercel Analytics/Meta Pixel
+// pra alimentar o painel /adm). visitorId é um UUID anônimo gerado no
+// localStorage do navegador, sem relação com a conta logada.
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  visitorId String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorId])
+  @@map("page_views")
+}
+
 // Contato avisado automaticamente (WhatsApp) quando uma dose fica sem
 // confirmação por tempo demais — recurso pago (Família/Premium),
 // pensado pra um cuidador que não é quem recebe o lembrete original.

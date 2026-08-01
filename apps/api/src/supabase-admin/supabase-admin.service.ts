@@ -7,6 +7,14 @@ interface OwnerContact {
   whatsapp: string | null;
 }
 
+export interface AdminUserSummary {
+  id: string;
+  email: string | null;
+  nome: string | null;
+  criadoEm: string;
+  emailConfirmado: boolean;
+}
+
 @Injectable()
 export class SupabaseAdminService {
   private readonly logger = new Logger(SupabaseAdminService.name);
@@ -55,6 +63,45 @@ export class SupabaseAdminService {
     if (error || !data.user) return null;
 
     return data.user.email ?? null;
+  }
+
+  /**
+   * Lista todos os usuários do Supabase Auth, paginando internamente.
+   * Usado só pelo painel /adm — não pensado pra bases com muitos milhares
+   * de contas (não há necessidade disso na escala atual do produto).
+   */
+  async listUsers(): Promise<AdminUserSummary[]> {
+    if (!this.client) return [];
+
+    const perPage = 200;
+    let page = 1;
+    const all: AdminUserSummary[] = [];
+
+    while (true) {
+      const { data, error } = await this.client.auth.admin.listUsers({
+        page,
+        perPage,
+      });
+      if (error || !data) {
+        this.logger.warn(`Falha ao listar usuários: ${error?.message}`);
+        break;
+      }
+
+      for (const user of data.users) {
+        all.push({
+          id: user.id,
+          email: user.email ?? null,
+          nome: (user.user_metadata?.nome as string | undefined) ?? null,
+          criadoEm: user.created_at,
+          emailConfirmado: Boolean(user.email_confirmed_at),
+        });
+      }
+
+      if (data.users.length < perPage) break;
+      page += 1;
+    }
+
+    return all;
   }
 
   async deleteUser(userId: string): Promise<void> {
