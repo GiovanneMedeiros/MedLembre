@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/routing/ProtectedRoute";
 import { GuestOnlyRoute } from "./components/routing/GuestOnlyRoute";
 import { AppLayout } from "./components/app/AppLayout";
 import { LandingPage } from "./pages/LandingPage";
+import { PlanosPage } from "./pages/PlanosPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
@@ -55,6 +56,7 @@ function App() {
           <PixelRouteTracker />
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/planos" element={<PlanosPage />} />
             <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
             <Route element={<GuestOnlyRoute />}>
