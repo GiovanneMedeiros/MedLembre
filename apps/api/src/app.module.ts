@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -17,6 +17,9 @@ import { PushModule } from './push/push.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { EmergencyContactsModule } from './emergency-contacts/emergency-contacts.module';
 import { WeeklyReportsModule } from './weekly-reports/weekly-reports.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { AdminModule } from './admin/admin.module';
+import { ActivityInterceptor } from './common/activity.interceptor';
 
 @Module({
   imports: [
@@ -37,8 +40,14 @@ import { WeeklyReportsModule } from './weekly-reports/weekly-reports.module';
     RemindersModule,
     EmergencyContactsModule,
     WeeklyReportsModule,
+    AnalyticsModule,
+    AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_INTERCEPTOR, useClass: ActivityInterceptor },
+  ],
 })
 export class AppModule {}

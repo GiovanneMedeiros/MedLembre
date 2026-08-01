@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import { trackPageView } from "./lib/fbPixel";
+import { trackPageview } from "./lib/analytics";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/routing/ProtectedRoute";
 import { GuestOnlyRoute } from "./components/routing/GuestOnlyRoute";
@@ -20,6 +21,7 @@ import { HistoricoPage } from "./pages/app/HistoricoPage";
 import { FamiliaPage } from "./pages/app/FamiliaPage";
 import { AssinaturaPage } from "./pages/app/AssinaturaPage";
 import { ConfiguracoesPage } from "./pages/app/ConfiguracoesPage";
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,12 +50,26 @@ function PixelRouteTracker() {
   return null;
 }
 
+// Pageview de primeira parte (alimenta o painel /adm) — dispara em toda
+// troca de rota, incluindo o carregamento inicial (diferente do Pixel,
+// aqui não existe um script estático cobrindo esse primeiro load).
+function AnalyticsRouteTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageview(location.pathname);
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
           <PixelRouteTracker />
+          <AnalyticsRouteTracker />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/planos" element={<PlanosPage />} />
@@ -66,6 +82,7 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute />}>
+              <Route path="/adm" element={<AdminDashboardPage />} />
               <Route path="/dashboard/alterar-senha" element={<ChangePasswordPage />} />
 
               <Route element={<AppLayout />}>
