@@ -186,6 +186,23 @@ export class RemindersScheduler {
     scheduledFor: Date,
     horario: string,
   ) {
+    // Sem isso, quem passou do teste grátis de 48h continuava recebendo
+    // lembretes pra sempre (o app já bloqueia o acesso, mas o cron não
+    // sabia disso) — e como a pessoa não consegue mais entrar no app pra
+    // pausar/excluir o medicamento, ficava recebendo notificação sem
+    // conseguir fazer nada a respeito. Não cria ReminderLog nem agenda
+    // nudge — a dose simplesmente não é mais processada até a pessoa
+    // assinar um plano.
+    const subscription = await this.subscriptionsService.getOrCreate(
+      medication.userId,
+    );
+    if (this.subscriptionsService.isTrialExpired(subscription)) {
+      this.logger.log(
+        `Lembrete de "${medication.nome}" ignorado — teste grátis do usuário ${medication.userId} expirou.`,
+      );
+      return;
+    }
+
     // Push é gratuito e só alcança o navegador do dono da conta (familiares
     // não têm login próprio), então é enviado sempre, em paralelo ao canal
     // de telefone — funciona mesmo se WhatsApp/SMS não estiverem configurados.
