@@ -4,7 +4,7 @@
 
 ### Gestão inteligente de medicamentos e rotina de cuidado
 
-Uma solução moderna para organizar tratamentos, reduzir erros de medicação e facilitar o acompanhamento de pacientes, familiares e cuidadores.
+Uma plataforma moderna para organizar tratamentos, reduzir erros de medicação e facilitar a rotina de pacientes, familiares e cuidadores.
 
 [![React](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%20%2F%206-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -13,7 +13,7 @@ Uma solução moderna para organizar tratamentos, reduzir erros de medicação e
 [![Supabase](https://img.shields.io/badge/Supabase-Auth-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![pnpm](https://img.shields.io/badge/pnpm-Workspace-f69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
-[Visão geral](#-visão-geral) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#-arquitetura) · [Tecnologias](#-tecnologias) · [Como executar](#-como-executar) · [Estrutura](#-estrutura-do-repositório)
+[Visão geral](#-visão-geral) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#-arquitetura) · [Tecnologias](#-tecnologias) · [Como executar](#-como-executar) · [Roadmap](#-roadmap)
 
 </div>
 
@@ -21,48 +21,56 @@ Uma solução moderna para organizar tratamentos, reduzir erros de medicação e
 
 ## 💙 Visão geral
 
-O **MedLembre** foi pensado para transformar a rotina de cuidado em uma experiência mais segura, organizada e acessível. A plataforma centraliza o cadastro de medicamentos, o acompanhamento de doses, os lembretes de administração e o histórico de uso, ajudando pessoas em tratamento, familiares e cuidadores a manterem o controle com mais clareza e menos fricção.
+O **MedLembre** é uma solução de gestão de medicamentos e acompanhamento de rotina de cuidado, desenvolvida para tornar a adesão ao tratamento mais simples, segura e organizada. A plataforma centraliza o cadastro de medicamentos, lembretes, histórico de doses e acompanhamento da rotina de uso, reduzindo erros e melhorando o controle para pacientes, familiares e cuidadores.
 
-O projeto é estruturado em um monorepo com uma aplicação web em **React** e uma API em **NestJS**, usando **PostgreSQL** como banco de dados principal, **Prisma** para a camada de dados e **Supabase** para autenticação e identidade. A solução foi desenhada para evoluir com escalabilidade, boa experiência de uso e integração com canais de comunicação e recursos premium.
+A arquitetura do projeto foi pensada para ser escalável e sustentável, com uma aplicação web moderna em **React**, uma API em **NestJS**, banco de dados em **PostgreSQL** e autenticação em **Supabase**. O objetivo é entregar uma experiência funcional e confiável para uso diário, com base em boas práticas de engenharia, arquitetura modular e desenvolvimento orientado a produto.
 
-> O MedLembre é uma ferramenta de apoio à organização e ao acompanhamento da rotina de medicamentos. Não substitui orientação médica, prescrição, diagnóstico ou acompanhamento profissional.
+> O MedLembre é uma ferramenta de apoio à organização e acompanhamento de tratamentos. Não substitui orientação médica, prescrição, diagnóstico ou acompanhamento profissional.
 
-## ✨ Funcionalidades
+## ✨ Por que este projeto importa
 
-- **Gestão de medicamentos:** cadastro completo de remédios com nome, dose, frequência, dias de uso e período de tratamento.
-- **Controle de doses:** registro de administração, histórico de consumo e visualização do status da rotina.
-- **Lembretes inteligentes:** alertas programados para reforçar a adesão ao tratamento e reduzir esquecimentos.
-- **Painel de acompanhamento:** visão consolidada de doses pendentes, atrasadas e próximas de execução.
-- **Cuidado compartilhado:** suporte para acompanhamento por familiares e cuidadores com contexto compartilhado da rotina.
-- **Notificações multi-canal:** integração com WhatsApp, SMS e web push para reforço de alertas.
-- **Planos e assinaturas:** estrutura preparada para planos, limites de uso e integrações de checkout e webhook.
-- **Área administrativa:** suporte a gestão de usuários, métricas e visão operacional da aplicação.
-- **Experiência web moderna:** landing page, autenticação, recuperação de senha e interface protegida para uso diário.
+O uso de múltiplos medicamentos, horários e cuidados pode gerar confusão e aumentar o risco de falhas na rotina de tratamento. O MedLembre foi desenhado para:
 
-A disponibilidade de recursos avançados, como notificações, pagamentos e integrações por canal, depende das credenciais e configurações dos provedores externos configurados no ambiente.
+- reduzir esquecimentos e atrasos na administração das doses;
+- melhorar a organização da rotina de medicamentos;
+- facilitar o acompanhamento de familiares e cuidadores;
+- aumentar a clareza sobre o histórico de uso e pendências;
+- dar visibilidade a uma experiência mais segura e consistente.
+
+## 🧩 Funcionalidades principais
+
+- **Gestão de medicamentos:** cadastro de remédios com nome, dose, frequência, período de uso e status.
+- **Controle de doses:** registro de administração e consulta ao histórico de doses tomadas.
+- **Lembretes inteligentes:** alertas para reforçar a adesão ao tratamento e reduzir esquecimentos.
+- **Painel de acompanhamento:** visão consolidada de pendências, doses atrasadas e próximos lembretes.
+- **Cuidado compartilhado:** suporte para acompanhamento por familiares e cuidadores.
+- **Notificações multi-canal:** integração com WhatsApp, SMS e web push para reforçar alertas.
+- **Planos e assinaturas:** estrutura preparada para cobrança, limites por plano e integrações de checkout/webhook.
+- **Área administrativa:** visualização de métricas e suporte ao gerenciamento da aplicação.
+- **Experiência web moderna:** autenticação, recuperação de senha, landing page e fluxo protegido para uso contínuo.
 
 ## 🏗️ Arquitetura
 
-A solução segue uma arquitetura modular e escalável, com separação clara entre camadas de apresentação, aplicação e dados.
+O projeto segue uma abordagem modular, centrada em separação de responsabilidades e escalabilidade.
 
-- **Frontend (apps/web):** interface responsiva em React + Vite + TypeScript, foco em experiência do usuário e navegação intuitiva.
-- **Backend (apps/api):** API REST em NestJS, responsável por regras de negócio, autenticação e serviços de domínio.
-- **Dados (PostgreSQL + Prisma):** persistência confiável e modelagem estruturada para o ciclo completo da rotina de medicamentos.
-- **Autenticação (Supabase Auth):** gestão segura de usuários, sessões e identidade digital.
-- **Integrações externas:** notificações, comunicação e pagamentos conectados por provedores específicos conforme o ambiente.
-- **Monorepo (pnpm + Turborepo):** organização eficiente para múltiplos pacotes e evolução do produto de forma sustentável.
+- **Frontend (`apps/web`):** aplicação web em React + Vite + TypeScript.
+- **Backend (`apps/api`):** API em NestJS responsável por regras de negócio e integrações.
+- **Dados:** persistência em PostgreSQL com Prisma para modelagem e acesso ao banco.
+- **Autenticação:** identidade e sessões geridas com Supabase Auth.
+- **Integrações externas:** WhatsApp, SMS, notificações web e serviços financeiros conforme o ambiente.
+- **Monorepo:** organização com pnpm workspaces e Turborepo para manter um projeto escalável e sustentável.
 
-## 🧰 Tecnologias
+## 🧰 Stack tecnológica
 
 | Camada | Tecnologias |
 | --- | --- |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS, TanStack Query |
 | Backend | NestJS 11, TypeScript, Passport/JWT |
-| Dados | PostgreSQL, Prisma 7, `@prisma/adapter-pg` |
+| Banco de dados | PostgreSQL, Prisma 7, `@prisma/adapter-pg` |
 | Autenticação | Supabase Auth |
 | Validação compartilhada | Zod |
 | Monorepo | pnpm workspaces, Turborepo |
-| Integrações | WhatsApp Cloud API, Twilio, Web Push, pagamentos e outros serviços externos |
+| Integrações | WhatsApp Cloud API, Twilio, Web Push, pagamentos e serviços externos |
 
 ## 🚀 Como executar
 
@@ -73,7 +81,7 @@ A solução segue uma arquitetura modular e escalável, com separação clara en
 - Instância de **PostgreSQL** acessível
 - Projeto **Supabase** configurado para autenticação
 
-Recursos opcionais, como WhatsApp, SMS, e-mail, web push e pagamentos, exigem credenciais adicionais e não são obrigatórios para rodar a base da aplicação.
+Recursos opcionais, como WhatsApp, SMS, e-mail, web push e pagamentos, exigem credenciais adicionais e não são obrigatórios para executar a base da aplicação.
 
 ### 1. Instale as dependências
 
@@ -134,7 +142,7 @@ pnpm dev
 - Frontend: [http://localhost:5173](http://localhost:5173)
 - API: [http://localhost:3333](http://localhost:3333)
 
-Se quiser executar apenas um serviço:
+Para rodar apenas um serviço:
 
 ```bash
 pnpm --filter @medlembre/web dev
@@ -159,24 +167,34 @@ pnpm --filter @medlembre/api test:e2e
 ```text
 medlembre/
 ├── apps/
-│   ├── api/       # API NestJS, Prisma e migrações do banco
-│   └── web/       # Aplicação web em React + Vite
+│   ├── api/        # API NestJS, Prisma e migrações do banco
+│   └── web/        # Aplicação web em React + Vite
 ├── packages/
-│   └── shared/    # Tipos e validações compartilhadas
-├── package.json   # Scripts e configuração do workspace
+│   └── shared/     # Tipos e validações compartilhadas
+├── package.json    # Scripts e configuração do workspace
 ├── pnpm-workspace.yaml
-├── turbo.json     # Pipeline do monorepo
+├── turbo.json      # Pipeline do monorepo
 ├── pnpm-lock.yaml
-└── README.md
+├── README.md
+└── .gitignore
 ```
+
+## 🛣️ Roadmap
+
+- [ ] refinamento da experiência de onboarding e autenticação;
+- [ ] gestão avançada de lembretes e recorrência de doses;
+- [ ] relatórios e acompanhamento de aderência ao tratamento;
+- [ ] integração com canais de comunicação mais amplos;
+- [ ] expansão de dashboards para supervisão familiar e administrativa;
+- [ ] melhorias na experiência mobile e usabilidade em produção.
 
 ## 🔐 Configuração e segurança
 
-- Mantenha segredos e chaves privadas apenas no backend.
-- Utilize credenciais separadas para desenvolvimento e produção.
-- Configure URLs de origem, webhooks e integrações de acordo com o ambiente.
-- Ative somente serviços externos que estejam devidamente configurados.
-- Nunca exponha chaves sensíveis no frontend ou em repositórios públicos.
+- mantenha segredos e chaves privadas apenas no backend;
+- utilize credenciais separadas para desenvolvimento e produção;
+- configure URLs de origem, webhooks e integrações de acordo com o ambiente;
+- ative somente serviços externos devidamente configurados;
+- nunca exponha chaves sensíveis no frontend ou em repositórios públicos.
 
 ## 📄 Licença
 
