@@ -21,21 +21,21 @@ Uma plataforma moderna para organizar tratamentos, reduzir erros de medicação 
 
 ## 💙 Visão geral
 
-O **MedLembre** é uma solução de gestão de medicamentos e acompanhamento de rotina de cuidado, desenvolvida para tornar a adesão ao tratamento mais simples, segura e organizada. A plataforma centraliza o cadastro de medicamentos, lembretes, histórico de doses e acompanhamento da rotina de uso, reduzindo erros e melhorando o controle para pacientes, familiares e cuidadores.
+O **MedLembre** é uma solução de gestão de medicamentos e acompanhamento de rotina de cuidado, criada para tornar a adesão ao tratamento mais simples, segura e organizada. A plataforma centraliza o cadastro de medicamentos, lembretes, histórico de doses e acompanhamento da rotina de uso, reduzindo erros e melhorando o controle para pacientes, familiares e cuidadores.
 
-A arquitetura do projeto foi pensada para ser escalável e sustentável, com uma aplicação web moderna em **React**, uma API em **NestJS**, banco de dados em **PostgreSQL** e autenticação em **Supabase**. O objetivo é entregar uma experiência funcional e confiável para uso diário, com base em boas práticas de engenharia, arquitetura modular e desenvolvimento orientado a produto.
+O projeto foi arquitetado com foco em escalabilidade, desempenho e experiência do usuário, combinando uma aplicação web moderna em **React**, uma API em **NestJS**, persistência em **PostgreSQL** e autenticação em **Supabase**. O objetivo é entregar uma solução funcional, confiável e pronta para evoluir com novas integrações e recursos de negócio.
 
-> O MedLembre é uma ferramenta de apoio à organização e acompanhamento de tratamentos. Não substitui orientação médica, prescrição, diagnóstico ou acompanhamento profissional.
+> O MedLembre é uma ferramenta de apoio à organização e ao acompanhamento de tratamentos. Não substitui orientação médica, prescrição, diagnóstico ou acompanhamento profissional.
 
 ## ✨ Por que este projeto importa
 
-O uso de múltiplos medicamentos, horários e cuidados pode gerar confusão e aumentar o risco de falhas na rotina de tratamento. O MedLembre foi desenhado para:
+A rotina de medicamentos envolve múltiplos fatores — horários, frequências, doses, acompanhamento e comunicação. O MedLembre foi desenvolvido para resolver esse desafio com uma abordagem prática e centrada em cuidado:
 
 - reduzir esquecimentos e atrasos na administração das doses;
 - melhorar a organização da rotina de medicamentos;
 - facilitar o acompanhamento de familiares e cuidadores;
 - aumentar a clareza sobre o histórico de uso e pendências;
-- dar visibilidade a uma experiência mais segura e consistente.
+- entregar uma experiência mais segura e consistente no dia a dia.
 
 ## 🧩 Funcionalidades principais
 
@@ -51,14 +51,14 @@ O uso de múltiplos medicamentos, horários e cuidados pode gerar confusão e au
 
 ## 🏗️ Arquitetura
 
-O projeto segue uma abordagem modular, centrada em separação de responsabilidades e escalabilidade.
+O projeto segue uma abordagem modular, com separação clara entre apresentação, regras de negócio, integração e persistência.
 
 - **Frontend (`apps/web`):** aplicação web em React + Vite + TypeScript.
-- **Backend (`apps/api`):** API em NestJS responsável por regras de negócio e integrações.
+- **Backend (`apps/api`):** API em NestJS, responsável por regras de negócio e integrações.
 - **Dados:** persistência em PostgreSQL com Prisma para modelagem e acesso ao banco.
 - **Autenticação:** identidade e sessões geridas com Supabase Auth.
 - **Integrações externas:** WhatsApp, SMS, notificações web e serviços financeiros conforme o ambiente.
-- **Monorepo:** organização com pnpm workspaces e Turborepo para manter um projeto escalável e sustentável.
+- **Monorepo:** organização com pnpm workspaces e Turborepo para manter a base do projeto escalável e sustentável.
 
 ## 🧰 Stack tecnológica
 
