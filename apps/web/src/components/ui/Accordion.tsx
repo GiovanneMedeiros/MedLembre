@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "../../lib/cn";
 
 interface AccordionItem {
@@ -12,14 +12,14 @@ export function Accordion({ items }: { items: AccordionItem[] }) {
   const baseId = useId();
 
   return (
-    <div className="divide-y divide-ink-900/[0.06] rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+    <div className="border-b-2 border-ink-900/10">
       {items.map((item, index) => {
         const isOpen = openIndex === index;
         const panelId = `${baseId}-panel-${index}`;
         const buttonId = `${baseId}-button-${index}`;
 
         return (
-          <div key={item.question}>
+          <div key={item.question} className="border-t-2 border-ink-900/10">
             <h3>
               <button
                 id={buttonId}
@@ -27,16 +27,18 @@ export function Accordion({ items }: { items: AccordionItem[] }) {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => setOpenIndex(isOpen ? null : index)}
-                className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left text-base font-semibold text-ink-900 transition-colors hover:text-brand-600 sm:px-6"
+                className="flex w-full items-center justify-between gap-6 py-6 text-left text-xl font-bold text-ink-900 transition-colors hover:text-brand-700"
               >
                 {item.question}
-                <ChevronDown
+                <span
                   aria-hidden="true"
                   className={cn(
-                    "h-5 w-5 shrink-0 text-brand-500 transition-transform duration-300",
-                    isOpen && "rotate-180",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-300",
+                    isOpen ? "rotate-45 bg-brand-600 text-white" : "bg-cha text-brand-700",
                   )}
-                />
+                >
+                  <Plus className="h-5 w-5" strokeWidth={2.5} />
+                </span>
               </button>
             </h3>
             <div
@@ -49,7 +51,7 @@ export function Accordion({ items }: { items: AccordionItem[] }) {
               )}
             >
               <div className="overflow-hidden">
-                <p className="px-5 pb-5 text-ink-500 sm:px-6">{item.answer}</p>
+                <p className="max-w-2xl pb-7 pr-12 text-lg leading-relaxed text-ink-700">{item.answer}</p>
               </div>
             </div>
           </div>

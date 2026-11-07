@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthLayout } from "../../components/auth/AuthLayout";
+import { AuthLayout, authInputSize } from "../../components/auth/AuthLayout";
+import { cn } from "../../lib/cn";
 import { FormField } from "../../components/auth/FormField";
 import { PasswordInput } from "../../components/auth/PasswordInput";
 import { FormAlert } from "../../components/auth/FormAlert";
@@ -75,7 +76,7 @@ export function RegisterPage() {
               id="nome"
               type="text"
               autoComplete="name"
-              className={inputClassName}
+              className={cn(inputClassName, authInputSize)}
               placeholder="Seu nome completo"
               {...register("nome")}
             />
@@ -86,7 +87,7 @@ export function RegisterPage() {
               id="email"
               type="email"
               autoComplete="email"
-              className={inputClassName}
+              className={cn(inputClassName, authInputSize)}
               placeholder="voce@email.com"
               {...register("email")}
             />
@@ -107,7 +108,7 @@ export function RegisterPage() {
                   type="tel"
                   inputMode="numeric"
                   autoComplete="tel"
-                  className={inputClassName}
+                  className={cn(inputClassName, authInputSize)}
                   placeholder="(11) 91234-5678"
                   value={field.value ?? ""}
                   onChange={(event) => field.onChange(formatWhatsAppInput(event.target.value))}
@@ -124,6 +125,7 @@ export function RegisterPage() {
             hint="Mínimo de 8 caracteres, com letra maiúscula, minúscula e número."
           >
             <PasswordInput
+              className={authInputSize}
               id="senha"
               autoComplete="new-password"
               placeholder="Crie uma senha segura"
@@ -133,6 +135,7 @@ export function RegisterPage() {
 
           <FormField label="Confirmar senha" htmlFor="confirmarSenha" error={errors.confirmarSenha?.message}>
             <PasswordInput
+              className={authInputSize}
               id="confirmarSenha"
               autoComplete="new-password"
               placeholder="Repita a senha"
@@ -141,7 +144,7 @@ export function RegisterPage() {
           </FormField>
 
           <div className="mt-1">
-            <SubmitButton isLoading={isSubmitting} loadingText="Criando conta...">
+            <SubmitButton variant="solid" size="xl" isLoading={isSubmitting} loadingText="Criando conta...">
               Criar conta
             </SubmitButton>
           </div>

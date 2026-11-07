@@ -16,7 +16,7 @@ export function FormField({ label, htmlFor, error, children, hint }: FormFieldPr
         {label}
       </label>
       {children}
-      {hint && !error && <p className="mt-1.5 text-xs text-ink-300">{hint}</p>}
+      {hint && !error && <p className="mt-1.5 text-sm leading-snug text-ink-500">{hint}</p>}
       {error && (
         <p role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
           <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

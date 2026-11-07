@@ -24,6 +24,76 @@
 
   --color-cream: #fffaf9;
 
+  /* Landing + autenticação: tipografia de alta legibilidade e as cores do
+     porta-comprimidos (manhã / noite) — usadas só para indicar período. */
+  --font-hyper: "Atkinson Hyperlegible Next", "Inter", system-ui, -apple-system, sans-serif;
+  --color-cha: #faefeb;
+  --color-cha-deep: #f2ddd6;
+  --color-manha: #f2b441;
+  --color-manha-soft: #fcedc8;
+  --color-noite: #34407a;
+  --color-noite-soft: #dde1f3;
+
+  --animate-lid-open: lid-open 0.7s cubic-bezier(0.65, 0, 0.35, 1) 0.5s both;
+  --animate-arrive: arrive 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
+
+  --animate-drift: drift-up 18s linear infinite;
+  --animate-twinkle: twinkle 3.2s ease-in-out infinite;
+  --animate-glow: glow 7s ease-in-out infinite;
+
+  @keyframes drift-up {
+    from {
+      transform: translateY(120%) rotate(0deg);
+    }
+    to {
+      transform: translateY(-520px) rotate(200deg);
+    }
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes glow {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.85;
+    }
+    50% {
+      transform: scale(1.12);
+      opacity: 1;
+    }
+  }
+
+  @keyframes lid-open {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes arrive {
+    from {
+      transform: translateY(24px) scale(0.97);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+  }
+
   --shadow-soft: 0 2px 8px -2px rgba(94, 24, 21, 0.08), 0 8px 24px -8px rgba(94, 24, 21, 0.1);
   --shadow-lift: 0 8px 16px -4px rgba(94, 24, 21, 0.12), 0 24px 48px -16px rgba(94, 24, 21, 0.18);
   --shadow-glow: 0 0 0 1px rgba(216, 69, 59, 0.06), 0 20px 60px -20px rgba(194, 46, 36, 0.35);
@@ -106,6 +176,11 @@
   h4 {
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
+  }
+
+  .font-hyper :is(h1, h2, h3, h4) {
+    font-family: var(--font-hyper);
+    letter-spacing: -0.015em;
   }
 
   :focus-visible {

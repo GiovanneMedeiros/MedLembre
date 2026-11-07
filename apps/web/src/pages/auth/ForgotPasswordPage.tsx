@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import { AuthLayout } from "../../components/auth/AuthLayout";
+import { AuthLayout, authInputSize } from "../../components/auth/AuthLayout";
+import { cn } from "../../lib/cn";
 import { FormField } from "../../components/auth/FormField";
 import { FormAlert } from "../../components/auth/FormAlert";
 import { SubmitButton } from "../../components/auth/SubmitButton";
@@ -54,13 +55,13 @@ export function ForgotPasswordPage() {
               id="email"
               type="email"
               autoComplete="email"
-              className={inputClassName}
+              className={cn(inputClassName, authInputSize)}
               placeholder="voce@email.com"
               {...register("email")}
             />
           </FormField>
 
-          <SubmitButton isLoading={isSubmitting} loadingText="Enviando link...">
+          <SubmitButton variant="solid" size="xl" isLoading={isSubmitting} loadingText="Enviando link...">
             Enviar link de recuperação
           </SubmitButton>
         </form>

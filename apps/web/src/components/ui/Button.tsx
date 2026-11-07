@@ -2,8 +2,9 @@ import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "reac
 import { Link, type LinkProps } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost";
-type Size = "md" | "lg";
+// "solid", "outline" e "light" são usadas na landing e nas telas de login/cadastro.
+type Variant = "primary" | "secondary" | "ghost" | "solid" | "outline" | "light";
+type Size = "md" | "lg" | "xl";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:pointer-events-none disabled:opacity-50";
@@ -14,11 +15,15 @@ const variants: Record<Variant, string> = {
   secondary:
     "bg-white text-ink-900 border border-brand-200/70 shadow-soft hover:border-brand-300 hover:-translate-y-0.5 active:translate-y-0",
   ghost: "text-ink-700 hover:text-brand-600 hover:bg-brand-50",
+  solid: "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800",
+  outline: "border-2 border-ink-900/15 bg-white text-ink-900 hover:border-ink-900/40",
+  light: "bg-white text-brand-800 hover:bg-cha",
 };
 
 const sizes: Record<Size, string> = {
   md: "h-11 px-5 text-sm",
   lg: "h-12 px-7 text-base",
+  xl: "h-14 px-8 text-lg font-bold",
 };
 
 interface CommonProps {
