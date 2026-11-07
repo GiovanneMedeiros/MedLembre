@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthLayout } from "../../components/auth/AuthLayout";
+import { AuthLayout, authInputSize } from "../../components/auth/AuthLayout";
+import { cn } from "../../lib/cn";
 import { FormField } from "../../components/auth/FormField";
 import { PasswordInput } from "../../components/auth/PasswordInput";
 import { FormAlert } from "../../components/auth/FormAlert";
@@ -57,7 +58,7 @@ export function LoginPage() {
             id="email"
             type="email"
             autoComplete="email"
-            className={inputClassName}
+            className={cn(inputClassName, authInputSize)}
             placeholder="voce@email.com"
             {...register("email")}
           />
@@ -65,6 +66,7 @@ export function LoginPage() {
 
         <FormField label="Senha" htmlFor="senha" error={errors.senha?.message}>
           <PasswordInput
+            className={authInputSize}
             id="senha"
             autoComplete="current-password"
             placeholder="Sua senha"
@@ -73,12 +75,12 @@ export function LoginPage() {
         </FormField>
 
         <div className="-mt-1 text-right">
-          <Link to="/esqueci-senha" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+          <Link to="/esqueci-senha" className="text-base font-medium text-brand-700 underline underline-offset-4 hover:text-brand-800">
             Esqueceu a senha?
           </Link>
         </div>
 
-        <SubmitButton isLoading={isSubmitting} loadingText="Entrando...">
+        <SubmitButton variant="solid" size="xl" isLoading={isSubmitting} loadingText="Entrando...">
           Entrar
         </SubmitButton>
       </form>

@@ -1,39 +1,57 @@
-import { SectionHeading } from "../ui/SectionHeading";
+import { motion } from "motion/react";
 import { Container } from "../ui/Container";
-import { ScrollReveal } from "../ui/ScrollReveal";
+import { MaskedText } from "../motion/MaskedText";
+import { Reveal } from "../motion/Reveal";
 import { STEPS } from "../../data/steps";
+
+const EXPO_OUT = [0.19, 1, 0.22, 1] as const;
 
 export function HowItWorks() {
   return (
-    <section id="como-funciona" className="py-20 sm:py-28">
+    <section id="como-funciona" className="scroll-mt-20 bg-cha py-20 sm:py-28">
       <Container>
-        <ScrollReveal>
-          <SectionHeading
-            eyebrow="Simples assim"
-            title="Como funciona"
-            description="Três passos para deixar o esquecimento de lado."
-          />
-        </ScrollReveal>
+        <MaskedText
+          text="Pronto para usar em três passos"
+          className="max-w-3xl text-4xl font-extrabold leading-tight text-ink-900 sm:text-5xl"
+        />
+        <Reveal delay={0.2} y={20}>
+          <p className="mt-5 max-w-xl text-xl leading-relaxed text-ink-700">
+            Leva uns cinco minutos. Se preferir, peça ajuda a alguém da família na primeira vez.
+          </p>
+        </Reveal>
 
-        <div className="relative mt-16 grid gap-8 sm:grid-cols-3">
-          <div
-            className="absolute left-0 right-0 top-9 hidden h-px bg-gradient-to-r from-transparent via-brand-200 to-transparent sm:block"
-            aria-hidden="true"
-          />
-
-          {STEPS.map((step, index) => (
-            <ScrollReveal key={step.number} delay={index * 120} className="relative text-center">
-              <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-soft">
-                <step.icon className="h-7 w-7 text-brand-600" strokeWidth={1.75} aria-hidden="true" />
-                <span className="absolute -top-3 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-b from-brand-500 to-brand-600 text-xs font-bold text-white shadow-soft">
-                  {step.number}
-                </span>
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-ink-900">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-500">{step.description}</p>
-            </ScrollReveal>
-          ))}
-        </div>
+        <ol className="mt-14 grid gap-12 md:grid-cols-3 md:gap-10">
+          {STEPS.map((step, index) => {
+            const delay = index * 0.18;
+            return (
+              <li key={step.title}>
+                {/* linha que se desenha da esquerda para a direita */}
+                <motion.span
+                  aria-hidden="true"
+                  className="block h-0.5 origin-left bg-ink-900/20"
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+                  transition={{ duration: 1, delay, ease: EXPO_OUT }}
+                />
+                <motion.span
+                  aria-hidden="true"
+                  className="mt-6 block origin-bottom-left text-6xl font-extrabold leading-none text-brand-600"
+                  initial={{ opacity: 0, scale: 0.4, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+                  transition={{ type: "spring", stiffness: 260, damping: 16, delay: delay + 0.2 }}
+                >
+                  {index + 1}
+                </motion.span>
+                <Reveal delay={delay + 0.3} y={24}>
+                  <h3 className="mt-5 text-2xl font-bold text-ink-900">{step.title}</h3>
+                  <p className="mt-3 text-lg leading-relaxed text-ink-700">{step.description}</p>
+                </Reveal>
+              </li>
+            );
+          })}
+        </ol>
       </Container>
     </section>
   );

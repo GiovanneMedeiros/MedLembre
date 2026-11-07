@@ -1,30 +1,21 @@
-import type { LucideIcon } from "lucide-react";
-import { BellRing, ClipboardList, Clock } from "lucide-react";
-
 export interface Step {
-  number: string;
   title: string;
   description: string;
-  icon: LucideIcon;
 }
 
 export const STEPS: Step[] = [
   {
-    number: "01",
-    title: "Cadastre seus medicamentos",
-    description: "Adicione nome, dosagem e observações de cada medicamento em poucos minutos.",
-    icon: ClipboardList,
+    title: "Cadastre seus remédios",
+    description:
+      "Coloque o nome, a dose e, se quiser, uma observação, como “tomar em jejum”. Dá para copiar direto da caixinha ou da receita.",
   },
   {
-    number: "02",
-    title: "Defina os horários",
-    description: "Configure a frequência e os horários certos para cada remédio da sua rotina.",
-    icon: Clock,
+    title: "Escolha os horários",
+    description: "Diga em que horários e em quais dias da semana cada remédio deve ser tomado.",
   },
   {
-    number: "03",
-    title: "Instale e receba o lembrete",
-    description: "Adicione o MedLembre à tela do seu celular e receba uma notificação no horário certo.",
-    icon: BellRing,
+    title: "Coloque na tela do celular",
+    description:
+      "Adicione o MedLembre à tela inicial, como um aplicativo, e permita as notificações. Na hora certa, o celular avisa.",
   },
 ];

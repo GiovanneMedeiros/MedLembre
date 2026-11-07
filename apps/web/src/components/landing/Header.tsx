@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { motion, useScroll } from "motion/react";
 import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
 import { Container } from "../ui/Container";
 import { cn } from "../../lib/cn";
 
 const NAV_ITEMS = [
-  { label: "Início", href: "#inicio" },
   { label: "Como funciona", href: "#como-funciona" },
-  { label: "Benefícios", href: "#beneficios" },
+  { label: "Para quem cuida", href: "#beneficios" },
   { label: "Planos", href: "#planos" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Dúvidas", href: "#faq" },
 ];
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { scrollYProgress } = useScroll();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -34,13 +35,13 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        isScrolled ? "bg-cream/90 shadow-soft backdrop-blur-md" : "bg-transparent",
+        "fixed inset-x-0 top-0 z-50 border-b-2 transition-colors duration-200",
+        isScrolled || isMenuOpen ? "border-ink-900/[0.07] bg-white" : "border-transparent bg-white/0",
       )}
     >
       <Container>
-        <div className="flex h-16 items-center justify-between sm:h-20">
-          <a href="#inicio" className="shrink-0" aria-label="MedLembre — início">
+        <div className="flex h-18 items-center justify-between sm:h-20">
+          <a href="#inicio" className="shrink-0" aria-label="MedLembre, início">
             <Logo />
           </a>
 
@@ -49,25 +50,25 @@ export function Header() {
               <a
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium text-ink-700 transition-colors hover:text-brand-600"
+                className="text-base font-medium text-ink-700 underline-offset-8 transition-colors hover:text-brand-700 hover:underline"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 lg:flex">
-            <Button as="link" to="/login" variant="ghost" size="md">
+          <div className="hidden items-center gap-2 lg:flex">
+            <Button as="link" to="/login" variant="ghost" size="lg">
               Entrar
             </Button>
-            <Button as="link" to="/cadastro" variant="primary" size="md">
-              Começar agora
+            <Button as="link" to="/cadastro" variant="solid" size="lg">
+              Criar conta
             </Button>
           </div>
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-ink-900 lg:hidden"
+            className="inline-flex h-12 w-12 items-center justify-center rounded-full text-ink-900 hover:bg-cha lg:hidden"
             aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((open) => !open)}
@@ -77,31 +78,38 @@ export function Header() {
         </div>
       </Container>
 
+      {/* barra de progresso da leitura */}
+      <motion.div
+        aria-hidden="true"
+        style={{ scaleX: scrollYProgress }}
+        className="absolute inset-x-0 -bottom-0.5 h-[3px] origin-left bg-brand-600"
+      />
+
       <div
         className={cn(
-          "grid overflow-hidden bg-cream shadow-soft transition-all duration-300 ease-out lg:hidden",
-          isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+          "grid overflow-hidden bg-white transition-all duration-300 ease-out lg:hidden",
+          isMenuOpen ? "grid-rows-[1fr] border-t-2 border-ink-900/[0.07]" : "grid-rows-[0fr]",
         )}
       >
         <div className="overflow-hidden">
           <Container>
-            <nav className="flex flex-col gap-1 py-4" aria-label="Navegação móvel">
+            <nav className="flex flex-col py-4" aria-label="Navegação móvel">
               {NAV_ITEMS.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="rounded-lg px-3 py-3 text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600"
+                  className="rounded-xl px-3 py-3.5 text-lg font-medium text-ink-900 hover:bg-cha"
                 >
                   {item.label}
                 </a>
               ))}
-              <div className="mt-2 flex flex-col gap-2 border-t border-ink-900/[0.06] pt-4">
-                <Button as="link" to="/login" variant="secondary" size="md" onClick={() => setIsMenuOpen(false)}>
-                  Entrar
+              <div className="mt-3 flex flex-col gap-3 border-t-2 border-ink-900/[0.07] pt-5">
+                <Button as="link" to="/cadastro" variant="solid" size="xl" onClick={() => setIsMenuOpen(false)}>
+                  Criar conta
                 </Button>
-                <Button as="link" to="/cadastro" variant="primary" size="md" onClick={() => setIsMenuOpen(false)}>
-                  Começar agora
+                <Button as="link" to="/login" variant="outline" size="xl" onClick={() => setIsMenuOpen(false)}>
+                  Entrar
                 </Button>
               </div>
             </nav>

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { AuthLayout } from "../../components/auth/AuthLayout";
+import { AuthLayout, authInputSize } from "../../components/auth/AuthLayout";
 import { FormField } from "../../components/auth/FormField";
 import { PasswordInput } from "../../components/auth/PasswordInput";
 import { FormAlert } from "../../components/auth/FormAlert";
@@ -85,6 +85,7 @@ export function ResetPasswordPage() {
           hint="Mínimo de 8 caracteres, com letra maiúscula, minúscula e número."
         >
           <PasswordInput
+            className={authInputSize}
             id="novaSenha"
             autoComplete="new-password"
             placeholder="Crie uma nova senha"
@@ -94,6 +95,7 @@ export function ResetPasswordPage() {
 
         <FormField label="Confirmar nova senha" htmlFor="confirmarSenha" error={errors.confirmarSenha?.message}>
           <PasswordInput
+            className={authInputSize}
             id="confirmarSenha"
             autoComplete="new-password"
             placeholder="Repita a nova senha"
@@ -101,7 +103,7 @@ export function ResetPasswordPage() {
           />
         </FormField>
 
-        <SubmitButton isLoading={isSubmitting} loadingText="Salvando...">
+        <SubmitButton variant="solid" size="xl" isLoading={isSubmitting} loadingText="Salvando...">
           Salvar nova senha
         </SubmitButton>
       </form>
