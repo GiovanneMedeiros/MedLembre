@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Accessibility,
+  BellRing,
+  FileDown,
+  LifeBuoy,
+  Settings,
+  ShieldAlert,
+  UserRound,
   Bell,
   BellOff,
   ChevronRight,
@@ -161,12 +168,13 @@ export function ConfiguracoesPage() {
 
   return (
     <div className="pb-16">
-      <PageHeader title="Configurações" description="Gerencie os dados da sua conta." />
+      <PageHeader title="Configurações" icon={Settings} description="Gerencie os dados da sua conta." />
 
-      <Container className="max-w-2xl pt-6 sm:pt-8">
-        <div className="rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+      <Container className="pt-6 sm:pt-8">
+        <div className="max-w-3xl">
+        <div className="animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.05s", animationFillMode: "backwards" }}>
           <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">
-            <h2 className="text-sm font-bold text-ink-900">Meus dados</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-ink-900"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-50 text-brand-600"><UserRound className="h-4 w-4" aria-hidden="true" /></span>Meus dados</h2>
             {!isEditingProfile && (
               <button
                 type="button"
@@ -209,7 +217,7 @@ export function ConfiguracoesPage() {
                   Cancelar
                 </Button>
                 <Button variant="primary" size="md" onClick={handleSaveProfile} disabled={profileSaving}>
-                  {profileSaving ? "Salvando..." : "Salvar"}
+                  {profileSaving ? "Salvando…" : "Salvar"}
                 </Button>
               </div>
             </div>
@@ -227,9 +235,9 @@ export function ConfiguracoesPage() {
         </div>
 
         {isPushSupported() && (
-          <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+          <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.11s", animationFillMode: "backwards" }}>
             <div className="border-b border-ink-900/[0.06] px-5 py-4">
-              <h2 className="text-sm font-bold text-ink-900">Notificações</h2>
+              <h2 className="flex items-center gap-2.5 text-sm font-bold text-ink-900"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><BellRing className="h-4 w-4" aria-hidden="true" /></span>Notificações</h2>
             </div>
             <div className="flex items-center gap-3 px-5 py-4">
               {pushEnabled ? (
@@ -250,15 +258,15 @@ export function ConfiguracoesPage() {
                 disabled={pushLoading}
                 onClick={handleTogglePush}
               >
-                {pushLoading ? "Aguarde..." : pushEnabled ? "Desativar" : "Ativar"}
+                {pushLoading ? "Aguarde…" : pushEnabled ? "Desativar" : "Ativar"}
               </Button>
             </div>
           </div>
         )}
 
-        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+        <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.17s", animationFillMode: "backwards" }}>
           <div className="border-b border-ink-900/[0.06] px-5 py-4">
-            <h2 className="text-sm font-bold text-ink-900">Acessibilidade</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-ink-900"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-50 text-sky-600"><Accessibility className="h-4 w-4" aria-hidden="true" /></span>Acessibilidade</h2>
           </div>
           <div className="flex items-center gap-3 px-5 py-4">
             <Type className="h-4 w-4 text-brand-500" aria-hidden="true" />
@@ -278,9 +286,9 @@ export function ConfiguracoesPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+        <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.23s", animationFillMode: "backwards" }}>
           <div className="flex items-center justify-between border-b border-ink-900/[0.06] px-5 py-4">
-            <h2 className="text-sm font-bold text-ink-900">Exportar histórico</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-ink-900"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><FileDown className="h-4 w-4" aria-hidden="true" /></span>Exportar histórico</h2>
             {!canExportHistory && (
               <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-600">
                 Planos pagos
@@ -309,9 +317,9 @@ export function ConfiguracoesPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+        <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.29s", animationFillMode: "backwards" }}>
           <div className="border-b border-ink-900/[0.06] px-5 py-4">
-            <h2 className="text-sm font-bold text-ink-900">Suporte</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-ink-900"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><LifeBuoy className="h-4 w-4" aria-hidden="true" /></span>Suporte</h2>
           </div>
           <div className="px-5 py-4">
             <p className="text-sm text-ink-900">
@@ -329,21 +337,21 @@ export function ConfiguracoesPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-ink-900/[0.06] bg-white shadow-soft">
+        <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.35s", animationFillMode: "backwards" }}>
           <button
             type="button"
             onClick={() => navigate("/dashboard/alterar-senha")}
-            className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-ink-900/[0.02]"
+            className="group flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-ink-900/[0.02]"
           >
             <KeyRound className="h-4 w-4 text-brand-500" aria-hidden="true" />
             <span className="flex-1 text-sm font-medium text-ink-900">Alterar senha</span>
-            <ChevronRight className="h-4 w-4 text-ink-300" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4 text-ink-300 transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-red-200 bg-white shadow-soft">
+        <div className="mt-6 animate-rise overflow-hidden rounded-3xl border border-red-200 bg-white shadow-soft transition-shadow duration-300 hover:shadow-lift" style={{ animationDelay: "0.41s", animationFillMode: "backwards" }}>
           <div className="border-b border-red-100 px-5 py-4">
-            <h2 className="text-sm font-bold text-red-700">Zona de risco</h2>
+            <h2 className="flex items-center gap-2.5 text-sm font-bold text-red-700"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-red-600"><ShieldAlert className="h-4 w-4" aria-hidden="true" /></span>Zona de risco</h2>
           </div>
           <div className="flex items-center gap-3 px-5 py-4">
             <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
@@ -364,6 +372,7 @@ export function ConfiguracoesPage() {
             </Button>
           </div>
         </div>
+        </div>
       </Container>
 
       <ConfirmDialog
@@ -371,7 +380,7 @@ export function ConfiguracoesPage() {
         title="Excluir sua conta"
         description="Isso remove permanentemente seus medicamentos, histórico, familiares e assinatura. Essa ação não pode ser desfeita."
         confirmLabel="Excluir conta"
-        loadingLabel="Excluindo..."
+        loadingLabel="Excluindo…"
         isLoading={isDeleting}
         onConfirm={handleDeleteAccount}
         onCancel={() => setShowDeleteDialog(false)}
