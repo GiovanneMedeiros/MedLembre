@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Loader2, Star } from "lucide-react";
+import { Check, CreditCard, Crown, Star } from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { SegmentedToggle } from "../../components/ui/SegmentedToggle";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PageHeader } from "../../components/app/PageHeader";
+import { Lift } from "../../components/ui/Lift";
+import { CardsSkeleton } from "../../components/ui/CardsSkeleton";
 import { PLANS } from "../../data/plans";
 import { formatCurrency } from "../../lib/format";
 import { cn } from "../../lib/cn";
@@ -77,14 +79,10 @@ export function AssinaturaPage() {
 
   return (
     <div className="pb-16">
-      <PageHeader title="Assinatura" description="Gerencie seu plano e forma de pagamento." />
+      <PageHeader title="Assinatura" icon={CreditCard} description="Gerencie seu plano e forma de pagamento." />
 
       <Container className="pt-6 sm:pt-8">
-        {isLoading && (
-          <div className="flex items-center justify-center py-16 text-ink-300">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        )}
+        {isLoading && <CardsSkeleton count={1} className="mb-8 sm:grid-cols-1 lg:grid-cols-1" itemClassName="h-28" />}
 
         {checkoutResult === "sucesso" && (
           <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
@@ -103,11 +101,17 @@ export function AssinaturaPage() {
         )}
 
         {subscription && (
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-ink-900/[0.06] bg-white p-5 shadow-soft">
+          <div className="relative mb-10 flex animate-rise flex-wrap items-center justify-between gap-4 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 p-6 text-white shadow-lift sm:p-7">
+            <div className="pointer-events-none absolute -top-14 -right-14 h-48 w-48 rounded-full border-[18px] border-white/[0.08]" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full border-[14px] border-white/[0.06]" aria-hidden="true" />
+            <div className="relative flex items-center gap-4">
+              <span className="flex h-14 w-14 shrink-0 animate-float items-center justify-center rounded-2xl bg-white/15">
+                <Crown className="h-7 w-7" aria-hidden="true" />
+              </span>
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-300">Plano atual</p>
-              <div className="mt-1 flex items-center gap-2">
-                <h2 className="text-lg font-bold text-ink-900">
+              <p className="text-sm font-medium text-white/75">Plano atual</p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                <h2 className="font-heading text-2xl font-extrabold">
                   {PLANS.find((p) => PLAN_ID_TO_ENUM[p.id] === subscription.plano)?.name ?? subscription.plano}
                 </h2>
                 {currentStatus && (
@@ -117,15 +121,16 @@ export function AssinaturaPage() {
                 )}
               </div>
               {subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd && (
-                <p className="mt-1 text-sm text-amber-700">
+                <p className="mt-1 text-sm text-amber-100">
                   Sua assinatura será cancelada em{" "}
                   {new Date(subscription.currentPeriodEnd).toLocaleDateString("pt-BR")}.
                 </p>
               )}
             </div>
+            </div>
 
             {subscription.plano !== "GRATIS" && !subscription.cancelAtPeriodEnd && (
-              <Button variant="secondary" size="md" onClick={() => setShowCancelDialog(true)}>
+              <Button variant="secondary" size="md" className="relative" onClick={() => setShowCancelDialog(true)}>
                 Cancelar assinatura
               </Button>
             )}
@@ -154,7 +159,7 @@ export function AssinaturaPage() {
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {PLANS.map((plan) => {
+          {PLANS.map((plan, i) => {
             const isAnnual = cycle === "annual" && plan.annualPrice !== null;
             const displayPrice = isAnnual ? plan.annualPrice! / 12 : plan.monthlyPrice;
             const isCurrent = subscription?.plano === PLAN_ID_TO_ENUM[plan.id];
@@ -164,13 +169,24 @@ export function AssinaturaPage() {
             return (
               <div
                 key={plan.id}
+                className="animate-rise"
+                style={{ animationDelay: `${0.1 + i * 0.08}s`, animationFillMode: "backwards" }}
+              >
+              <Lift>
+              <div
                 className={cn(
-                  "relative flex h-full flex-col rounded-2xl border bg-white p-6",
+                  "relative flex h-full flex-col rounded-3xl border bg-white p-6",
                   plan.highlighted
                     ? "border-brand-300 shadow-glow ring-1 ring-brand-200"
                     : "border-ink-900/[0.06] shadow-soft",
+                  isCurrent && "ring-2 ring-emerald-400",
                 )}
               >
+                {plan.highlighted && (
+                  <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden="true">
+                    <span className="absolute inset-y-0 left-0 w-1/3 animate-shine bg-gradient-to-r from-transparent via-brand-100/60 to-transparent" />
+                  </div>
+                )}
                 {plan.highlighted && (
                   <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-3 py-1 text-[11px] font-bold text-white shadow-soft">
                     <Star className="h-3 w-3 fill-current" />
@@ -181,8 +197,8 @@ export function AssinaturaPage() {
                 <h3 className="text-base font-semibold text-ink-900">{plan.name}</h3>
                 <p className="mt-1.5 text-sm text-ink-500">{plan.description}</p>
 
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-ink-900">{formatCurrency(displayPrice)}</span>
+                <div key={cycle} className="mt-5 flex animate-rise items-baseline gap-1" style={{ animationDuration: "0.4s" }}>
+                  <span className="font-heading text-3xl font-extrabold text-ink-900 tabular-nums">{formatCurrency(displayPrice)}</span>
                   {plan.monthlyPrice > 0 && <span className="text-sm text-ink-500">/mês</span>}
                 </div>
 
@@ -203,8 +219,9 @@ export function AssinaturaPage() {
                 </ul>
 
                 {isCurrent ? (
-                  <div className="mt-7 flex h-11 w-full items-center justify-center rounded-full bg-ink-900/[0.04] text-sm font-semibold text-ink-500">
-                    Plano atual
+                  <div className="mt-7 flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-emerald-50 text-sm font-semibold text-emerald-700">
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                    Seu plano atual
                   </div>
                 ) : isFree ? (
                   <div className="mt-7 flex h-11 w-full items-center justify-center rounded-full text-sm text-ink-300">
@@ -218,9 +235,11 @@ export function AssinaturaPage() {
                     disabled={createCheckout.isPending}
                     onClick={() => handleSubscribe(plan.id)}
                   >
-                    {isPending ? "Redirecionando..." : "Assinar plano"}
+                    {isPending ? "Redirecionando…" : "Assinar plano"}
                   </Button>
                 )}
+              </div>
+              </Lift>
               </div>
             );
           })}

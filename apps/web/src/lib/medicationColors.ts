@@ -35,6 +35,22 @@ const RING_CLASSES: Record<MedicationColorKey, string> = {
   ink: "ring-ink-700",
 };
 
+// Valores literais para uso em SVG (fill/stroke), onde classes não servem.
+const HEX: Record<MedicationColorKey, string> = {
+  brand: "#d8453b",
+  blue: "#3b82f6",
+  emerald: "#10b981",
+  amber: "#f59e0b",
+  purple: "#a855f7",
+  pink: "#ec4899",
+  teal: "#14b8a6",
+  ink: "#3d2f2c",
+};
+
+export function medicationHex(cor: string): string {
+  return HEX[normalize(cor)];
+}
+
 function normalize(cor: string): MedicationColorKey {
   return (MEDICATION_COLORS as readonly string[]).includes(cor)
     ? (cor as MedicationColorKey)
