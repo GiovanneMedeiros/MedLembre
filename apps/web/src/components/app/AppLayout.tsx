@@ -129,7 +129,7 @@ export function AppLayout() {
         </div>
       )}
 
-      <main className="min-w-0 flex-1">
+      <main className="relative isolate min-w-0 flex-1">
         <InstallAppBanner />
         <PushNotificationBanner />
         {subscription?.plano === "GRATIS" && !subscription.trialExpired && subscription.trialExpiresAt && (

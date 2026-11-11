@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Sparkles, UserPlus, Users } from "lucide-react";
+import { Sparkles, UserPlus, Users } from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PageHeader } from "../../components/app/PageHeader";
+import { EmptyState } from "../../components/ui/EmptyState";
+import { Lift } from "../../components/ui/Lift";
+import { CardsSkeleton } from "../../components/ui/CardsSkeleton";
 import { FamilyMemberCard } from "../../components/family/FamilyMemberCard";
 import { FamilyMemberFormModal } from "../../components/family/FamilyMemberFormModal";
 import { useDeleteFamilyMember, useFamilyMembers } from "../../hooks/useFamilyMembers";
@@ -39,8 +42,11 @@ export function FamiliaPage() {
 
   if (isLoadingSubscription) {
     return (
-      <div className="flex items-center justify-center py-24 text-ink-300">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className="pb-16">
+        <PageHeader title="Família" icon={Users} description="Acompanhe a rotina de medicamentos de quem você cuida." />
+        <Container className="pt-6 sm:pt-8">
+          <CardsSkeleton count={3} itemClassName="h-24" />
+        </Container>
       </div>
     );
   }
@@ -48,20 +54,37 @@ export function FamiliaPage() {
   if (subscription && !subscription.hasFamilyAccess) {
     return (
       <div className="pb-16">
-        <PageHeader title="Família" description="Acompanhe a rotina de medicamentos de quem você cuida." />
+        <PageHeader title="Família" icon={Users} description="Acompanhe a rotina de medicamentos de quem você cuida." />
         <Container className="pt-6 sm:pt-8">
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink-900/15 bg-white py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-              <Sparkles className="h-7 w-7" aria-hidden="true" />
+          <EmptyState
+            icon={Sparkles}
+            title="Disponível nos planos Família e Premium"
+            description="Faça upgrade para cadastrar familiares e acompanhar os medicamentos de quem você cuida."
+            action={
+              <Button size="lg" onClick={() => navigate("/dashboard/assinatura")}>
+                <Sparkles className="h-5 w-5" aria-hidden="true" />
+                Ver planos
+              </Button>
+            }
+          >
+            {/* Avatares de exemplo pulando */}
+            <div className="relative mt-6 flex -space-x-3" aria-hidden="true">
+              {[
+                ["MA", "from-brand-400 to-brand-600"],
+                ["JO", "from-sky-400 to-blue-600"],
+                ["VÓ", "from-emerald-400 to-teal-600"],
+                ["PA", "from-amber-400 to-orange-600"],
+              ].map(([label, gradient], i) => (
+                <span
+                  key={label}
+                  className={`flex h-12 w-12 animate-float items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white ring-4 ring-white ${gradient}`}
+                  style={{ animationDelay: `${i * 0.35}s` }}
+                >
+                  {label}
+                </span>
+              ))}
             </div>
-            <h2 className="mt-4 text-lg font-bold text-ink-900">Disponível nos planos Família e Premium</h2>
-            <p className="mt-1 max-w-sm text-sm text-ink-500">
-              Faça upgrade para cadastrar familiares e acompanhar os medicamentos de quem você cuida.
-            </p>
-            <Button className="mt-6" onClick={() => navigate("/dashboard/assinatura")}>
-              Ver planos
-            </Button>
-          </div>
+          </EmptyState>
         </Container>
       </div>
     );
@@ -71,21 +94,18 @@ export function FamiliaPage() {
     <div className="pb-16">
       <PageHeader
         title="Família"
+        icon={Users}
         description="Acompanhe a rotina de medicamentos de quem você cuida."
         action={
-          <Button onClick={openCreateForm}>
-            <UserPlus className="h-4 w-4" />
+          <Button onClick={openCreateForm} size="lg">
+            <UserPlus className="h-5 w-5" aria-hidden="true" />
             Adicionar familiar
           </Button>
         }
       />
 
       <Container className="pt-6 sm:pt-8">
-        {isLoading && (
-          <div className="flex items-center justify-center py-24 text-ink-300">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        )}
+        {isLoading && <CardsSkeleton count={3} itemClassName="h-24" />}
 
         {isError && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
@@ -94,30 +114,35 @@ export function FamiliaPage() {
         )}
 
         {familyMembers && familyMembers.length === 0 && (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink-900/15 bg-white py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-              <Users className="h-7 w-7" aria-hidden="true" />
-            </div>
-            <h2 className="mt-4 text-lg font-bold text-ink-900">Nenhum familiar cadastrado</h2>
-            <p className="mt-1 max-w-sm text-sm text-ink-500">
-              Adicione um familiar para começar a acompanhar os medicamentos dele.
-            </p>
-            <Button className="mt-6" onClick={openCreateForm}>
-              <UserPlus className="h-4 w-4" />
-              Adicionar familiar
-            </Button>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="Nenhum familiar cadastrado"
+            description="Adicione um familiar para acompanhar os medicamentos dele e receber avisos quando uma dose for esquecida."
+            action={
+              <Button size="lg" onClick={openCreateForm}>
+                <UserPlus className="h-5 w-5" aria-hidden="true" />
+                Adicionar familiar
+              </Button>
+            }
+          />
         )}
 
         {familyMembers && familyMembers.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {familyMembers.map((familyMember) => (
-              <FamilyMemberCard
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {familyMembers.map((familyMember, i) => (
+              <div
                 key={familyMember.id}
-                familyMember={familyMember}
-                onEdit={() => openEditForm(familyMember)}
-                onDelete={() => setMemberToDelete(familyMember)}
-              />
+                className="animate-rise"
+                style={{ animationDelay: `${0.08 + i * 0.06}s`, animationFillMode: "backwards" }}
+              >
+                <Lift>
+                  <FamilyMemberCard
+                    familyMember={familyMember}
+                    onEdit={() => openEditForm(familyMember)}
+                    onDelete={() => setMemberToDelete(familyMember)}
+                  />
+                </Lift>
+              </div>
             ))}
           </div>
         )}

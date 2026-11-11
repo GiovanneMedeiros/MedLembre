@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
-import { Loader2, Pill, PlusCircle } from "lucide-react";
+import { AlarmClock, Pause, Pill, PlusCircle } from "lucide-react";
 import { Container } from "../../components/ui/Container";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { PageHeader } from "../../components/app/PageHeader";
+import { EmptyState } from "../../components/ui/EmptyState";
+import { Lift } from "../../components/ui/Lift";
+import { CardsSkeleton } from "../../components/ui/CardsSkeleton";
+import { StatPill } from "../../components/ui/StatPill";
 import { MedicationCard } from "../../components/medications/MedicationCard";
 import { MedicationFormModal } from "../../components/medications/MedicationFormModal";
 import { ScheduleConflictBanner } from "../../components/medications/ScheduleConflictBanner";
@@ -27,6 +31,10 @@ export function MedicationsListPage() {
     () => (conflictAlertEnabled && medications ? findScheduleConflicts(medications) : []),
     [conflictAlertEnabled, medications],
   );
+
+  const ativos = medications?.filter((m) => m.status === "ATIVO") ?? [];
+  const pausados = (medications?.length ?? 0) - ativos.length;
+  const dosesPorDia = ativos.reduce((acc, m) => acc + m.horarios.length, 0);
 
   const [formState, setFormState] = useState<{ open: boolean; medication: Medication | null }>({
     open: false,
@@ -52,21 +60,18 @@ export function MedicationsListPage() {
     <div className="pb-16">
       <PageHeader
         title="Meus medicamentos"
+        icon={Pill}
         description="Cadastre, edite e acompanhe todos os seus medicamentos."
         action={
-          <Button onClick={openCreateForm}>
-            <PlusCircle className="h-4 w-4" />
+          <Button onClick={openCreateForm} size="lg">
+            <PlusCircle className="h-5 w-5" aria-hidden="true" />
             Adicionar medicamento
           </Button>
         }
       />
 
       <Container className="pt-6 sm:pt-8">
-        {isLoading && (
-          <div className="flex items-center justify-center py-24 text-ink-300">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        )}
+        {isLoading && <CardsSkeleton />}
 
         {isError && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
@@ -75,28 +80,48 @@ export function MedicationsListPage() {
         )}
 
         {medications && medications.length === 0 && (
-          <div className="flex flex-col items-center rounded-2xl border border-dashed border-ink-900/15 bg-white py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
-              <Pill className="h-7 w-7" aria-hidden="true" />
+          <EmptyState
+            icon={Pill}
+            title="Nenhum medicamento cadastrado"
+            description="Adicione seu primeiro medicamento com os horários em que você toma. O MedLembre avisa na hora certa."
+            action={
+              <Button onClick={openCreateForm} size="lg">
+                <PlusCircle className="h-5 w-5" aria-hidden="true" />
+                Adicionar medicamento
+              </Button>
+            }
+          >
+            {/* Horários de exemplo flutuando */}
+            <div className="relative mt-6 flex gap-2" aria-hidden="true">
+              {["08:00", "14:00", "20:00"].map((h, i) => (
+                <span
+                  key={h}
+                  className="animate-float rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700 tabular-nums"
+                  style={{ animationDelay: `${i * 0.6}s` }}
+                >
+                  {h}
+                </span>
+              ))}
             </div>
-            <h2 className="mt-4 text-lg font-bold text-ink-900">Nenhum medicamento cadastrado</h2>
-            <p className="mt-1 max-w-sm text-sm text-ink-500">
-              Adicione seu primeiro medicamento para começar a receber lembretes.
-            </p>
-            <Button className="mt-6" onClick={openCreateForm}>
-              <PlusCircle className="h-4 w-4" />
-              Adicionar medicamento
-            </Button>
-          </div>
+          </EmptyState>
         )}
 
         <ScheduleConflictBanner conflicts={conflicts} />
 
         {medications && medications.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {medications.map((medication) => (
+          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <StatPill icon={Pill} value={ativos.length} label={ativos.length === 1 ? "medicamento ativo" : "medicamentos ativos"} />
+            <StatPill icon={AlarmClock} value={dosesPorDia} label="doses programadas por dia" tone="emerald" delay={0.06} />
+            <StatPill icon={Pause} value={pausados} label={pausados === 1 ? "pausado" : "pausados"} tone="ink" delay={0.12} />
+          </div>
+        )}
+
+        {medications && medications.length > 0 && (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {medications.map((medication, i) => (
+              <div key={medication.id} className="animate-rise" style={{ animationDelay: `${0.1 + i * 0.06}s`, animationFillMode: "backwards" }}>
+              <Lift>
               <MedicationCard
-                key={medication.id}
                 medication={medication}
                 onEdit={() => openEditForm(medication)}
                 onDelete={() => setMedicationToDelete(medication)}
@@ -108,6 +133,8 @@ export function MedicationsListPage() {
                   })
                 }
               />
+              </Lift>
+              </div>
             ))}
           </div>
         )}
